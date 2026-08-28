@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import PlayerInput from './components/PlayerInput/PlayerInput';
+import ProfilePicker from './components/ProfilePicker/ProfilePicker';
 import { Link, useNavigate, type MetaFunction } from 'react-router';
 import type { TPlayerInitData } from '../../types';
+import type { TProfile } from '../../types/profiles';
+import { listProfiles } from '../../game/profiles/store';
 import { ToastContainer, toast } from 'react-toastify';
 import { useCleanup } from '../../hooks/useCleanup';
 import { playerCountToWord } from '../../game/players/logic';
@@ -22,33 +25,24 @@ import { logError } from '../../utils/logError';
 const toastIds = {
   allBotPlayer: 'all-bot-player',
   playerNameEmpty: 'player-name-empty',
+  profileMissing: 'profile-missing',
   corruptedSave: 'corrupted-save',
   incompatibleSave: 'incompatible-save',
 } as const satisfies Record<string, string>;
 
 const DEFAULT_PLAYER_DATA: TPlayerInitData[] = [
-  {
-    name: 'Player 1',
-    isBot: false,
-  },
-  {
-    name: 'Player 2',
-    isBot: false,
-  },
-  {
-    name: 'Player 3',
-    isBot: false,
-  },
-  {
-    name: 'Player 4',
-    isBot: false,
-  },
+  { name: '', isBot: false, profileId: null },
+  { name: '', isBot: false, profileId: null },
+  { name: '', isBot: false, profileId: null },
+  { name: '', isBot: false, profileId: null },
 ];
 
 export default function PlayerSetup() {
   const [playerCount, setPlayerCount] = useState(2);
   const [btnsDisabled, setBtnsDisabled] = useState(false);
   const [playersData, setPlayersData] = useState<TPlayerInitData[]>(DEFAULT_PLAYER_DATA);
+  const [profiles, setProfiles] = useState<TProfile[]>([]);
+  const [pickerSeat, setPickerSeat] = useState<number | null>(null);
   const navigate = useNavigate();
   const cleanup = useCleanup();
   const playerSequence = useMemo(
@@ -59,6 +53,48 @@ export default function PlayerSetup() {
   useEffect(() => {
     cleanup();
   }, [cleanup]);
+
+  useEffect(() => {
+    listProfiles()
+      .then(setProfiles)
+      .catch(logError('PlayerSetup.loadProfiles'));
+  }, []);
+
+  const profileById = useCallback(
+    (id: string | null) => (id ? (profiles.find((p) => p.id === id) ?? null) : null),
+    [profiles]
+  );
+
+  // profileIds already assigned to a seat within the active player count.
+  const takenProfileIds = useMemo(
+    () =>
+      new Set(
+        playersData
+          .slice(0, playerCount)
+          .map((d) => d.profileId)
+          .filter((id): id is string => id !== null)
+      ),
+    [playersData, playerCount]
+  );
+
+  const handleSelectProfile = (seatIndex: number, profile: TProfile) => {
+    setPlayersData((prev) =>
+      prev.map((d, i) => (i === seatIndex ? { ...d, name: profile.name, profileId: profile.id } : d))
+    );
+    setPickerSeat(null);
+  };
+
+  const handleBotStatusChange = (seatIndex: number, isBot: boolean) => {
+    setPlayersData((prev) =>
+      prev.map((d, i) =>
+        i === seatIndex
+          ? isBot
+            ? { ...d, isBot: true, name: 'Bot', profileId: null }
+            : { ...d, isBot: false, name: '', profileId: null }
+          : d
+      )
+    );
+  };
 
   const handlePlayBtnClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     try {
@@ -75,19 +111,17 @@ export default function PlayerSetup() {
 
       const playerInitData = playersData.slice(0, playerCount);
       const areAllPlayersBot = playerInitData.every((d) => d.isBot);
-      const isAnyNameEmpty = playerInitData.some(
-        (d) => d.name === '' || [...d.name].every((c) => c === ' ')
-      );
+      const isAnyHumanWithoutProfile = playerInitData.some((d) => !d.isBot && d.profileId === null);
 
-      if (isAnyNameEmpty) {
-        toast('Player name must not be empty', {
-          type: 'error',
-          toastId: toastIds.playerNameEmpty,
-        });
-      } else if (areAllPlayersBot) {
+      if (areAllPlayersBot) {
         toast('There must be at least one human player', {
           type: 'error',
           toastId: toastIds.allBotPlayer,
+        });
+      } else if (isAnyHumanWithoutProfile) {
+        toast('Choose a player for each human seat', {
+          type: 'error',
+          toastId: toastIds.profileMissing,
         });
       } else {
         return void navigate('/play', { state: { initData: playerInitData } });
@@ -144,12 +178,10 @@ export default function PlayerSetup() {
               colour={c}
               name={playersData[index].name}
               isBot={playersData[index].isBot}
-              onBotStatusChange={(isBot) =>
-                setPlayersData(playersData.map((d, i) => (i === index ? { ...d, isBot } : d)))
-              }
-              onNameChange={(name) =>
-                setPlayersData(playersData.map((d, i) => (i === index ? { ...d, name } : d)))
-              }
+              hasProfile={playersData[index].profileId !== null}
+              photoBlob={profileById(playersData[index].profileId)?.photoBlob ?? null}
+              onBotStatusChange={(isBot) => handleBotStatusChange(index, isBot)}
+              onChooseProfile={() => setPickerSeat(index)}
               key={index}
             />
           ))}
@@ -194,6 +226,15 @@ export default function PlayerSetup() {
         openEvents={{ focus: false, mouseover: true }}
         place="bottom-start"
       />
+      {pickerSeat !== null && (
+        <ProfilePicker
+          profiles={profiles}
+          takenProfileIds={takenProfileIds}
+          currentProfileId={playersData[pickerSeat].profileId}
+          onSelect={(profile) => handleSelectProfile(pickerSeat, profile)}
+          onClose={() => setPickerSeat(null)}
+        />
+      )}
     </div>
   );
 }

@@ -70,13 +70,17 @@ export default function Board() {
           />
         ))
       )}
-      {dice.map((d) => (
-        <Dice
-          colour={d.colour}
-          playerName={players.find((p) => p.colour === d.colour)?.name as string}
-          key={d.colour}
-        />
-      ))}
+      {dice.map((d) => {
+        const player = players.find((p) => p.colour === d.colour);
+        return (
+          <Dice
+            colour={d.colour}
+            playerName={player?.name as string}
+            profileId={player?.profileId ?? null}
+            key={d.colour}
+          />
+        );
+      })}
       <BoardImage className={styles.boardImage} aria-hidden="true" />
     </div>
   );

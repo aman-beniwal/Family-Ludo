@@ -6,6 +6,7 @@ import rank2Image from '../../../../assets/player_rank_images/2.png';
 import rank3Image from '../../../../assets/player_rank_images/3.png';
 import { AnimatePresence, motion } from 'framer-motion';
 import { playerColours } from '../../../../game/players/constants';
+import { ProfilePhoto } from '../../../../components/ProfilePhoto/ProfilePhoto';
 import styles from './GameFinishPlayerItem.module.css';
 
 type Props = {
@@ -42,7 +43,8 @@ export default function GameFinishPlayerItem({ colour, isLast, name, rank }: Pro
   const { boardTileSize } = useSelector((state: RootState) => state.board);
   const { players } = useSelector((state: RootState) => state.players);
   const { gameStartTime, gameInactiveTime } = useSelector((state: RootState) => state.session);
-  const { playerFinishTime } = players.find((p) => p.colour === colour) as TPlayer;
+  const player = players.find((p) => p.colour === colour) as TPlayer;
+  const { playerFinishTime } = player;
 
   return (
     <AnimatePresence>
@@ -61,6 +63,7 @@ export default function GameFinishPlayerItem({ colour, isLast, name, rank }: Pro
           className={styles.playerColourDot}
           style={{ backgroundColor: playerColours[colour] }}
         ></span>
+        <ProfilePhoto profileId={player.profileId} name={name} size={boardTileSize * 1.1} />
         <span className={styles.gameFinishPlayerName}>{name}</span>
         <span className={styles.gameFinishTime}>
           {isLast ? '' : getTimeString(gameStartTime, playerFinishTime, gameInactiveTime)}

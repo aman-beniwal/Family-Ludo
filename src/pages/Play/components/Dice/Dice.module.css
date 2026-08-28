@@ -39,6 +39,9 @@
 
   &.green,
   &.yellow {
+    & .player-label {
+      flex-direction: row-reverse;
+    }
     & .player-name {
       text-align: end;
     }
@@ -69,13 +72,21 @@
   }
 }
 
+.player-label {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--board-tile-size) * 0.22);
+  padding: 0 var(--player-name-padding);
+  width: calc(var(--board-tile-size) * 5.5);
+}
+
 .player-name {
-  padding: 0 var(--player-name-padding) 0 var(--player-name-padding);
   font-weight: bold;
   font-size: calc(var(--board-tile-size) * 0.45);
   cursor: default;
-  width: calc(var(--board-tile-size) * 5.5);
-  word-break: break-all;
+  min-width: 0;
+  flex: 1 1 auto;
+  word-break: break-word;
 }
 
 @keyframes pulse {

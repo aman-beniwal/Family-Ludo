@@ -35,6 +35,7 @@ export const saveState = (currentState: RootState): void => {
       numberOfConsecutiveSix: p.numberOfConsecutiveSix,
       playerFinishTime: p.playerFinishTime,
       tokens: tokensToBeStored,
+      profileId: p.profileId,
     };
 
     toBeStored.players.push(playerToBeStored);

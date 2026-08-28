@@ -14,6 +14,10 @@ export type TPlayer = {
   numberOfConsecutiveSix: number;
   playerFinishTime: number;
   tokens: TToken[];
+  // Links a human seat to its on-device profile so the photo can be resolved
+  // from IndexedDB (null for bots or when no profile is linked). Photos are not
+  // stored in Redux/the save — only this id, then looked up at render.
+  profileId: string | null;
 };
 
 export type TCoordinate = {
@@ -25,6 +29,7 @@ export type TCoordinate = {
 export type TPlayerInitData = {
   isBot: boolean;
   name: string;
+  profileId: string | null;
 };
 
 export type TPlayerCount = 'two' | 'three' | 'four';

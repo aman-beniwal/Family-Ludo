@@ -18,10 +18,12 @@ import { useRollDice } from '../../../../hooks/useRollDice';
 import { useHandlePostDiceRoll } from '../../../../hooks/useHandlePostDiceRoll';
 import { useChangeTurn } from '../../../../hooks/useChangeTurn';
 import { logError } from '../../../../utils/logError';
+import { ProfilePhoto } from '../../../../components/ProfilePhoto/ProfilePhoto';
 
 type Props = {
   colour: TPlayerColour;
   playerName: string;
+  profileId: string | null;
 };
 
 function getDiceImage(diceNumber: number | undefined): string {
@@ -43,7 +45,7 @@ function getDiceImage(diceNumber: number | undefined): string {
   }
 }
 
-export default function Dice({ colour, playerName }: Props) {
+export default function Dice({ colour, playerName, profileId }: Props) {
   const {
     isAnyTokenMoving,
     isGameEnded,
@@ -104,7 +106,10 @@ export default function Dice({ colour, playerName }: Props) {
           aria-hidden="true"
         />
       </button>
-      <span className={styles.playerName}>{playerName}</span>
+      <span className={styles.playerLabel}>
+        <ProfilePhoto profileId={profileId} name={playerName} size={22} />
+        <span className={styles.playerName}>{playerName}</span>
+      </span>
     </div>
   );
 }

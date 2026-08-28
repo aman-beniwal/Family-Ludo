@@ -36,6 +36,12 @@ describe('Test players slice reducers', () => {
       expect(player.isBot).toBe(false);
       expect(player.tokens).toHaveLength(4);
       expect(player.numberOfConsecutiveSix).toBe(0);
+      expect(player.profileId).toBeNull();
+    });
+    it('stores the linked profileId when provided', () => {
+      const playerInitData = { name: 'Asha', colour: 'blue', isBot: false, profileId: 'abc' };
+      const newState = playersReducer(initialState, registerNewPlayer(playerInitData as never));
+      expect(getPlayer(newState, 'blue').profileId).toBe('abc');
     });
     it('should throw an error if a player with the same colour already exists', () => {
       const playerInitData = { name: 'Player 1', colour: 'blue', isBot: false };

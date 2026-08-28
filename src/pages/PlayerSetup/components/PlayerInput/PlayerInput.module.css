@@ -35,18 +35,51 @@
 .bot-status-btn:focus-visible {
   background-color: var(--color-primary-hover);
 }
-.player-name-input {
-  padding: 2cqw 2.85cqw;
-  font-size: 3.6cqw;
+.seat {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+  width: 100%;
+  padding: 1.6cqw 2.85cqw;
   border: 1px solid #ccc;
   border-radius: 1.61cqw;
-  outline: none;
+  background: white;
+  font-size: 3.6cqw;
+  text-align: left;
+  cursor: pointer;
   transition: border-color 200ms ease-in-out;
-  width: 100%;
+  min-height: 44px;
 }
 
-.player-name-input:hover,
-.player-name-input:focus-visible {
+button.seat:hover,
+button.seat:focus-visible {
   border-color: #5b6ef5;
   box-shadow: 0 0 0 2px rgba(91, 110, 245, 0.2);
+}
+
+.seat-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  color: #9ca3af;
+}
+
+.bot-avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #64748b;
+  padding: 8px;
+}
+
+.bot-avatar > svg {
+  width: 100%;
+  height: 100%;
 }

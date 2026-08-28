@@ -75,6 +75,7 @@ export default function Game({ initData }: Props) {
           name: initData[i].name,
           colour: calculatedSequence[i],
           isBot: initData[i].isBot,
+          profileId: initData[i].profileId,
         })
       );
       dispatch(registerDice(calculatedSequence[i]));

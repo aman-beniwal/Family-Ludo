@@ -53,6 +53,7 @@ const reducers = {
       name: string;
       colour: TPlayerColour;
       isBot: boolean;
+      profileId?: string | null;
     }>
   ) => {
     const player = state.players.find((p) => p.colour === action.payload.colour);
@@ -64,6 +65,7 @@ const reducers = {
       tokens: genLockedTokens(action.payload.colour),
       numberOfConsecutiveSix: 0,
       playerFinishTime: -1,
+      profileId: action.payload.profileId ?? null,
     });
   },
 

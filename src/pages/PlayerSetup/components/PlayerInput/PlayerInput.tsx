@@ -1,32 +1,53 @@
 import type { TPlayerColour } from '../../../../types';
 import BotIcon from '../../../../assets/icons/bot.svg?react';
 import HumanIcon from '../../../../assets/icons/human.svg?react';
-import { MAX_PLAYER_NAME_LENGTH, playerColours } from '../../../../game/players/constants';
+import { playerColours } from '../../../../game/players/constants';
+import { ProfileAvatar } from '../../../../components/ProfileAvatar/ProfileAvatar';
 import 'react-tooltip/dist/react-tooltip.css';
 import styles from './PlayerInput.module.css';
 
 type Props = {
   colour: TPlayerColour;
-  name: string;
   isBot: boolean;
+  name: string;
+  photoBlob: Blob | null;
+  hasProfile: boolean;
   onBotStatusChange: (isBot: boolean) => void;
-  onNameChange: (name: string) => void;
+  onChooseProfile: () => void;
 };
 
-function PlayerInput({ colour, isBot, name, onBotStatusChange, onNameChange }: Props) {
+function PlayerInput({
+  colour,
+  isBot,
+  name,
+  photoBlob,
+  hasProfile,
+  onBotStatusChange,
+  onChooseProfile,
+}: Props) {
   return (
     <div className={styles.playerInput}>
       <span
         className={styles.playerInputColourDot}
         style={{ backgroundColor: playerColours[colour] }}
       />
-      <input
-        type="text"
-        placeholder="Enter player name"
-        className={styles.playerNameInput}
-        value={name}
-        onChange={(e) => onNameChange(e.target.value.slice(0, MAX_PLAYER_NAME_LENGTH))}
-      />
+
+      {isBot ? (
+        <div className={styles.seat}>
+          <span className={styles.botAvatar} aria-hidden="true">
+            <BotIcon />
+          </span>
+          <span className={styles.seatName}>Bot</span>
+        </div>
+      ) : (
+        <button type="button" className={styles.seat} onClick={onChooseProfile}>
+          <ProfileAvatar name={hasProfile ? name : '?'} photoBlob={photoBlob} size={40} />
+          <span className={styles.seatName}>
+            {hasProfile ? name : <span className={styles.placeholder}>Choose player</span>}
+          </span>
+        </button>
+      )}
+
       <button
         className={styles.botStatusBtn}
         data-tooltip-id="bot-status-tooltip"

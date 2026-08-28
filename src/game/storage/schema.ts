@@ -24,6 +24,8 @@ const playerSchema = z.object({
   numberOfConsecutiveSix: z.number(),
   playerFinishTime: z.number(),
   tokens: tokenSchema.array().length(4),
+  // Added in SAVE_VERSION 2 so a resumed game shows the same profile photo/name.
+  profileId: z.string().nullable(),
 });
 
 export const schema = z.object({
