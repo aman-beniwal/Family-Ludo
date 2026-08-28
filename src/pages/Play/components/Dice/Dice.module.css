@@ -77,7 +77,16 @@
   align-items: center;
   gap: calc(var(--board-tile-size) * 0.22);
   padding: 0 var(--player-name-padding);
-  width: calc(var(--board-tile-size) * 5.5);
+  /* Fixed box so two labels sharing a board edge (3- and 4-player) never grow
+     into each other; the photo lives inside this box, not beside it. */
+  width: calc(var(--board-tile-size) * var(--player-label-width, 5.5));
+}
+
+/* When two labels share the top or bottom edge, tighten each so the photo +
+   name pair still fits without overlap (R18). */
+:global([data-player-count='3']) .player-label,
+:global([data-player-count='4']) .player-label {
+  --player-label-width: 5;
 }
 
 .player-name {
@@ -86,7 +95,11 @@
   cursor: default;
   min-width: 0;
   flex: 1 1 auto;
-  word-break: break-word;
+  /* Truncate rather than wrap/overflow, so a long name + photo can never push
+     the label past its box and overlap a neighbour. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @keyframes pulse {

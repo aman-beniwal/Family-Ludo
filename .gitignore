@@ -29,3 +29,6 @@ dist-ssr
 # Cloudflare
 .wrangler/
 .dev.vars
+
+# Claude Code local dev config
+.claude/

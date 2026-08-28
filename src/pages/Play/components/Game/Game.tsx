@@ -125,9 +125,11 @@ export default function Game({ initData }: Props) {
   return (
     <div
       className={styles.game}
+      data-player-count={players.length}
       style={
         {
           '--board-tile-size': `${boardTileSize}px`,
+          '--player-count': players.length,
           backgroundImage: `url(${bg})`,
         } as React.CSSProperties
       }
