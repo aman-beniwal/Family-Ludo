@@ -112,7 +112,7 @@ export default function Profiles() {
             <ul className={styles.cardList}>
               {profiles.map((profile) => (
                 <li key={profile.id} className={styles.card}>
-                  <ProfileAvatar name={profile.name} photoBlob={profile.photoBlob} size={72} />
+                  <ProfileAvatar name={profile.name} photoBlob={profile.photoBlob} size={56} />
                   <span className={styles.cardName}>{profile.name}</span>
                   <div className={styles.cardActions}>
                     <button
