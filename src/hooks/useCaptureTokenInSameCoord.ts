@@ -16,19 +16,6 @@ import { tokenMotionRegistry } from '../game/movement/tokenMotionRegistry';
 import { sleep } from '../utils/sleep';
 import { playSound } from '../game/sound/soundManager';
 import { vibrate } from '../utils/haptics';
-import tokenStyles from '../pages/Play/components/Token/Token.module.css';
-
-const CAPTURE_FLASH_MS = 450;
-
-// Adds the impact-flash class to a captured token's element for the duration of
-// the flash animation, then removes it so a later capture can replay it.
-function flashCapturedToken(elementId: string): void {
-  if (typeof document === 'undefined') return;
-  const el = document.getElementById(elementId);
-  if (!el) return;
-  el.classList.add(tokenStyles.captured);
-  window.setTimeout(() => el.classList.remove(tokenStyles.captured), CAPTURE_FLASH_MS);
-}
 
 export function useCaptureTokenInSameCoord() {
   const dispatch = useDispatch();
@@ -60,10 +47,9 @@ export function useCaptureTokenInSameCoord() {
       for (let i = 0; i < captureData.length; i++) {
         const { token, moveSequence } = captureData[i];
         const { colour, id } = token;
-        const uniqueId = getGloballyUniqueTokenId(colour, id);
-        const entry = tokenMotionRegistry.get(uniqueId);
+        const entry = tokenMotionRegistry.get(getGloballyUniqueTokenId(colour, id));
         if (!entry) continue;
-        flashCapturedToken(uniqueId);
+        entry.flashCapture();
         entry.setExternallyAnimating(true);
         dispatch(
           setTokenAlignmentData({ colour, id, newAlignmentData: defaultTokenAlignmentData })

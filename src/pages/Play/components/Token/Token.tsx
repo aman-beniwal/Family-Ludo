@@ -23,6 +23,9 @@ import { animate, motion, useMotionValue } from 'framer-motion';
 import { tokenMotionRegistry } from '../../../../game/movement/tokenMotionRegistry';
 import { logError } from '../../../../utils/logError';
 
+// Matches the capture-flash keyframe duration in Token.module.css.
+const CAPTURE_FLASH_MS = 450;
+
 type Props = {
   colour: TPlayerColour;
   id: number;
@@ -82,6 +85,12 @@ export default function Token({ colour, id, tokenClickData }: Props) {
         Promise.all([animate(motionX, x, transition), animate(motionY, y, transition)]).then(
           () => {}
         ),
+      flashCapture: () => {
+        const el = tokenElRef.current;
+        if (!el) return;
+        el.classList.add(styles.captured);
+        window.setTimeout(() => el.classList.remove(styles.captured), CAPTURE_FLASH_MS);
+      },
     });
     return () => {
       tokenMotionRegistry.delete(getGloballyUniqueTokenId(colour, id));

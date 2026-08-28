@@ -52,10 +52,15 @@ export default function Game({ initData }: Props) {
       if (success) {
         store.dispatch(hydrateRootState(data));
       } else {
-        throw error;
+        // An incompatible or corrupt save (e.g. one written before a
+        // SAVE_VERSION bump) must self-heal, not crash-loop the app on every
+        // resume. Discard it and send the player to setup for a new game.
+        logError('Game.resume')(error);
+        deleteSaveFromStorage();
+        void navigate('/setup');
       }
     }
-  }, [store]);
+  }, [store, navigate]);
 
   useEffect(() => {
     if (isGameEnded) deleteSaveFromStorage();

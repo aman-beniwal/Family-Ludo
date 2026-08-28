@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './ProfileAvatar.module.css';
 import clsx from 'clsx';
 
@@ -15,13 +15,26 @@ type Props = {
  * manager and the setup picker.
  */
 export function ProfileAvatar({ name, photoBlob, size = 64, className }: Props) {
-  // Derive the object URL from the blob and revoke it when the blob changes or
-  // the component unmounts. Kept out of state so no effect writes state.
-  const url = useMemo(() => (photoBlob ? URL.createObjectURL(photoBlob) : null), [photoBlob]);
+  // Create the object URL in an effect and revoke it in the matching cleanup,
+  // so allocation and release pair 1:1 with each commit (a StrictMode remount
+  // recreates exactly what its cleanup revoked). Creating it in render/useMemo
+  // instead would leak a URL per double-render.
+  const [url, setUrl] = useState<string | null>(null);
+  // set-state-in-effect is disabled for this effect on purpose: the object URL
+  // must be created in the effect so its cleanup can revoke it 1:1 (and clear on
+  // blob change/unmount). Deriving it in render to satisfy the rule leaks a URL
+  // per StrictMode double-render.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (!url) return;
-    return () => URL.revokeObjectURL(url);
-  }, [url]);
+    if (!photoBlob) return;
+    const objectUrl = URL.createObjectURL(photoBlob);
+    setUrl(objectUrl);
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+      setUrl(null);
+    };
+  }, [photoBlob]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const initial = name.trim().charAt(0).toUpperCase() || '?';
 

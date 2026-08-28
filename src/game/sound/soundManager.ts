@@ -139,6 +139,11 @@ export function unlockAudio(): Promise<void> {
       );
     } catch (e) {
       logError('sound.unlockAudio')(e);
+      // Reset so a later gesture retries fetch/decode. Without this, a single
+      // transient failure (e.g. a cold PWA before the service worker caches
+      // /sounds/*) would cache a failed attempt and silence sound all session.
+      // Successfully decoded buffers are already cached and are not re-fetched.
+      unlocking = null;
     }
   })();
 
