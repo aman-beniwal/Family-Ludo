@@ -50,6 +50,9 @@ export default function HomePage() {
             <Link className={clsx(styles.ctaButton, styles.howToPlayBtn)} to="/how-to-play">
               How to Play
             </Link>
+            <Link className={clsx(styles.ctaButton, styles.howToPlayBtn)} to="/profiles">
+              <H c="👥" /> Players
+            </Link>
             <Link className={clsx(styles.ctaButton, styles.howToPlayBtn)} to="/history">
               <H c="🎲" /> Roll History
             </Link>
