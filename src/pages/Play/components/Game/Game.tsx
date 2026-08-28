@@ -18,6 +18,7 @@ import { useRollDice } from '../../../../hooks/useRollDice';
 import { playerSequences } from '../../../../game/players/constants';
 import { logError } from '../../../../utils/logError';
 import { saveState } from '../../../../game/storage/saveState';
+import { SoundControl } from '../../../../components/SoundControl/SoundControl';
 
 export const EXIT_MESSAGE = 'Are you sure you want to exit?';
 
@@ -131,6 +132,7 @@ export default function Game({ initData }: Props) {
       }
     >
       <Board />
+      <SoundControl />
       <button
         type="button"
         aria-label="Exit button"

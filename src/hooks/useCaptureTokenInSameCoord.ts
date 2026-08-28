@@ -14,6 +14,7 @@ import { getGloballyUniqueTokenId } from '../game/tokens/logic';
 import { useCoordsToPosition } from './useCoordsToPosition';
 import { tokenMotionRegistry } from '../game/movement/tokenMotionRegistry';
 import { sleep } from '../utils/sleep';
+import { playSound } from '../game/sound/soundManager';
 
 export function useCaptureTokenInSameCoord() {
   const dispatch = useDispatch();
@@ -26,6 +27,8 @@ export function useCaptureTokenInSameCoord() {
     ): Promise<void> => {
       dispatch(deactivateAllTokens(capturingToken.colour));
       dispatch(setIsAnyTokenMoving(true));
+      // Capture sound fires as the captured token(s) start heading home (R14).
+      if (captureData.length > 0) playSound('capture');
       dispatch(
         setTokenAlignmentData({
           colour: capturingToken.colour,

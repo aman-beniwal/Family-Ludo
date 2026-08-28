@@ -31,7 +31,9 @@ export const pwaOptions: Partial<VitePWAOptions> = {
   },
   workbox: {
     globDirectory: 'build/client',
-    globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,svg,webp,gif,woff2,woff,ttf,eot,json}'],
+    globPatterns: [
+      '**/*.{js,css,html,ico,png,jpg,jpeg,svg,webp,gif,woff2,woff,ttf,eot,json,wav,mp3}',
+    ],
     globIgnores: ['icons/favicon.png', 'icons/favicon.svg'],
     navigateFallbackDenylist: [
       /sitemap\.xml$/,

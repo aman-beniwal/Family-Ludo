@@ -3,8 +3,10 @@ import Confetti from 'react-confetti';
 import GameFinishPlayerItem from '../GameFinishPlayerItem/GameFinishPlayerItem';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router';
+import { useEffect } from 'react';
 import styles from './GameFinishedScreen.module.css';
 import { useWindowDimensions } from '../../../../hooks/useWindowDimensions';
+import { playSound } from '../../../../game/sound/soundManager';
 
 type Props = {
   playerFinishOrder: TPlayerNameAndColour[];
@@ -12,6 +14,10 @@ type Props = {
 
 export default function GameFinishedScreen({ playerFinishOrder }: Props) {
   const { width, height } = useWindowDimensions();
+  useEffect(() => {
+    // Victory fanfare when the finish screen appears (R15).
+    playSound('win');
+  }, []);
   return (
     <AnimatePresence>
       <motion.div className={styles.gameFinishedScreen}>

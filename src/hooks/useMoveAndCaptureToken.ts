@@ -14,6 +14,7 @@ import { calculateSequence } from '../game/movement/calculateSequence';
 import { type RootState } from '../state/store';
 import { ERRORS } from '../utils/errors';
 import { saveState } from '../game/storage/saveState';
+import { playSound } from '../game/sound/soundManager';
 
 export function useMoveAndCaptureToken() {
   const moveToken = useMoveTokenForward();
@@ -40,8 +41,12 @@ export function useMoveAndCaptureToken() {
       const hasPlayerWon = nextState.players.players
         .find((p) => p.colour === token.colour)!
         .tokens.every((t) => t.hasTokenReachedHome);
-      if (hasTokenReachedHome)
+      if (hasTokenReachedHome) {
         dispatch(markTokenAsReachedHome({ colour: token.colour, id: token.id }));
+        // "Reaching home" sound: fires on the final step, once the token has
+        // actually entered its home triangle (R15).
+        playSound('home');
+      }
       return {
         isCaptured: captureData.length !== 0,
         hasTokenReachedHome,

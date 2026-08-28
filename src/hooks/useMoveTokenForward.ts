@@ -10,6 +10,7 @@ import { tokenMotionRegistry } from '../game/movement/tokenMotionRegistry';
 import { getGloballyUniqueTokenId } from '../game/tokens/logic';
 import { useCoordsToPosition } from './useCoordsToPosition';
 import { transitionStates } from '../game/tokens/constants';
+import { playSound } from '../game/sound/soundManager';
 
 export const useMoveTokenForward = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -34,6 +35,7 @@ export const useMoveTokenForward = () => {
         updateTokenPositionAndAlignment({ colour, id, newCoords: coord, direction: 'forward' });
         const updatedToken = getToken(store.getState().players, colour, id);
         const { x, y } = getPosition(coord, updatedToken.tokenAlignmentData);
+        playSound('move');
         await entry.animateTo(x, y, { duration: durationMs / 1000, ease: timingFn });
       }
       entry.setExternallyAnimating(false);

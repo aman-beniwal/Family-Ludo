@@ -3,6 +3,7 @@ import { useDispatch, useStore } from 'react-redux';
 import { changeTurn } from '../state/slices/playersSlice';
 import { useCallback } from 'react';
 import { saveState } from '../game/storage/saveState';
+import { playSound } from '../game/sound/soundManager';
 
 export const useChangeTurn = () => {
   const store = useStore<RootState>();
@@ -12,6 +13,7 @@ export const useChangeTurn = () => {
     const state = store.getState();
     if (state.players.isGameEnded || state.players.players.length === 0) return;
     dispatch(changeTurn());
+    playSound('turn');
     saveState(store.getState());
   }, [dispatch, store]);
 };

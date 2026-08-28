@@ -6,6 +6,7 @@ import { setIsPlaceholderShowing, setDiceNumber } from '../state/slices/diceSlic
 import { rollFairDie } from '../game/dice/rollFairDie';
 import { addRollHistoryEntry } from '../state/slices/rollHistorySlice';
 import { saveRollHistory } from '../game/storage/rollHistory';
+import { playSound } from '../game/sound/soundManager';
 import { saveState } from '../game/storage/saveState';
 import { sleep } from '../utils/sleep';
 import { ERRORS } from '../utils/errors';
@@ -19,6 +20,7 @@ export const useRollDice = () => {
     async (colour: TPlayerColour): Promise<number> => {
       if (store.getState().players.isGameEnded) throw new Error(ERRORS.gameEnded());
       dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: true }));
+      playSound('diceRoll');
       await sleep(DICE_PLACEHOLDER_DELAY);
       // Single choke point: humans and bots both reach the dice through here,
       // and the value comes only from the stateless fair generator (R1–R4).
