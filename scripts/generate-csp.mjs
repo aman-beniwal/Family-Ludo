@@ -3,7 +3,9 @@ import { globSync, readFileSync, writeFileSync } from 'node:fs';
 import * as cheerio from 'cheerio';
 import path from 'node:path';
 
-const CSP_HEADER = `Content-Security-Policy: default-src 'self'; script-src 'self' <js-hashes-placeholder>; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`;
+// img-src includes blob: so on-device profile photos rendered via object URLs
+// (URL.createObjectURL) load on the deployed build, not just in dev.
+const CSP_HEADER = `Content-Security-Policy: default-src 'self'; script-src 'self' <js-hashes-placeholder>; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'`;
 const BUILD_DIR = 'build/client';
 
 const htmlFiles = globSync(`${BUILD_DIR}/**/*.html`);
