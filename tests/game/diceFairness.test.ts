@@ -28,7 +28,7 @@ const CHI_SQUARE_CRITICAL_DF5_P001 = 20.515;
 const SERIAL_CORRELATION_TOLERANCE = 0.02;
 
 function drawSample(n: number): number[] {
-  const sample: number[] = new Array(n);
+  const sample: number[] = new Array<number>(n);
   for (let i = 0; i < n; i++) sample[i] = rollFairDie();
   return sample;
 }

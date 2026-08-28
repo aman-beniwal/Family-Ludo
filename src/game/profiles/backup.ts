@@ -1,3 +1,4 @@
+import * as z from 'zod';
 import type { TProfile } from '../../types/profiles';
 import { listProfiles, putProfile } from './store';
 
@@ -56,17 +57,20 @@ export async function exportProfilesToJson(exportedAt: number): Promise<string> 
   return JSON.stringify(await buildBackup(profiles, exportedAt), null, 2);
 }
 
-function isBackupEntry(value: unknown): value is BackupEntry {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  return (
-    typeof v.id === 'string' &&
-    typeof v.name === 'string' &&
-    typeof v.createdAt === 'number' &&
-    (v.photoType === null || typeof v.photoType === 'string') &&
-    (v.photoData === null || typeof v.photoData === 'string')
-  );
-}
+const backupEntrySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.number(),
+  photoType: z.string().nullable(),
+  photoData: z.string().nullable(),
+});
+
+// Validated in two stages so the user gets a meaningful message: whether the
+// file is the wrong kind entirely, or the right kind but corrupted.
+const backupShellSchema = z.object({
+  format: z.literal(BACKUP_FORMAT),
+  profiles: z.array(z.unknown()),
+});
 
 /** Parses and validates a backup file's text into profiles. Throws on invalid input. */
 export function parseBackup(text: string): TProfile[] {
@@ -76,17 +80,15 @@ export function parseBackup(text: string): TProfile[] {
   } catch {
     throw new Error('This file is not a valid backup.');
   }
-  if (typeof parsed !== 'object' || parsed === null) {
-    throw new Error('This file is not a valid backup.');
-  }
-  const backup = parsed as Record<string, unknown>;
-  if (backup.format !== BACKUP_FORMAT || !Array.isArray(backup.profiles)) {
+  const shell = backupShellSchema.safeParse(parsed);
+  if (!shell.success) {
     throw new Error('This file is not a LibreLudo profiles backup.');
   }
-  if (!backup.profiles.every(isBackupEntry)) {
+  const entries = z.array(backupEntrySchema).safeParse(shell.data.profiles);
+  if (!entries.success) {
     throw new Error('This backup file is damaged and could not be read.');
   }
-  return (backup.profiles as BackupEntry[]).map((e) => ({
+  return entries.data.map((e) => ({
     id: e.id,
     name: e.name,
     createdAt: e.createdAt,

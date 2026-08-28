@@ -2,6 +2,8 @@
 // context on the first user gesture (required by iOS autoplay policy), and
 // plays six game events while respecting a persisted mute/volume setting.
 
+import { logError } from '../../utils/logError';
+
 export type SoundName = 'diceRoll' | 'move' | 'capture' | 'home' | 'turn' | 'win';
 
 export const SOUND_FILES: Record<SoundName, string> = {
@@ -54,7 +56,7 @@ export function loadSoundSettings(): void {
     const storedVol = localStorage.getItem(SOUND_VOLUME_KEY);
     if (storedVol !== null) volume = clampVolume(parseFloat(storedVol));
   } catch (e) {
-    console.error(e);
+    logError('sound.loadSettings')(e);
   }
   emit();
 }
@@ -73,7 +75,7 @@ export function setMuted(next: boolean): void {
     try {
       localStorage.setItem(SOUND_MUTED_KEY, String(next));
     } catch (e) {
-      console.error(e);
+      logError('sound.setMuted')(e);
     }
   }
   emit();
@@ -85,7 +87,7 @@ export function setVolume(next: number): void {
     try {
       localStorage.setItem(SOUND_VOLUME_KEY, String(volume));
     } catch (e) {
-      console.error(e);
+      logError('sound.setVolume')(e);
     }
   }
   emit();
@@ -136,7 +138,7 @@ export function unlockAudio(): Promise<void> {
         })
       );
     } catch (e) {
-      console.error('Audio unlock failed', e);
+      logError('sound.unlockAudio')(e);
     }
   })();
 
@@ -156,7 +158,7 @@ export function playSound(name: SoundName): void {
     source.connect(gain).connect(audioCtx.destination);
     source.start(0);
   } catch (e) {
-    console.error(e);
+    logError('sound.playSound')(e);
   }
 }
 

@@ -6,8 +6,14 @@ import {
   exportProfilesToJson,
   importProfiles,
   parseBackup,
+  type ProfileBackup,
 } from '../../src/game/profiles/backup';
-import { createProfile, DB_NAME, listProfiles } from '../../src/game/profiles/store';
+import {
+  __resetProfileCacheForTests,
+  createProfile,
+  DB_NAME,
+  listProfiles,
+} from '../../src/game/profiles/store';
 
 function resetDB(): Promise<void> {
   return new Promise((resolve) => {
@@ -20,6 +26,7 @@ function resetDB(): Promise<void> {
 
 beforeEach(async () => {
   await resetDB();
+  __resetProfileCacheForTests();
 });
 
 describe('profile backup', () => {
@@ -27,7 +34,7 @@ describe('profile backup', () => {
     await createProfile({ name: 'Asha', photoBlob: new Blob([new Uint8Array([1, 2, 3])]) });
     await createProfile({ name: 'Bo', photoBlob: null });
     const json = await exportProfilesToJson(1000);
-    const backup = JSON.parse(json);
+    const backup = JSON.parse(json) as ProfileBackup;
     expect(backup.format).toBe(BACKUP_FORMAT);
     expect(backup.profiles).toHaveLength(2);
     expect(backup.profiles[0].name).toBe('Asha');

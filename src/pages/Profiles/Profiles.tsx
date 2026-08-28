@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, type MetaFunction } from 'react-router';
+import { type MetaFunction } from 'react-router';
+import { BackLink } from '../../components/BackLink/BackLink';
 import type { TProfile } from '../../types/profiles';
 import {
   createProfile,
@@ -9,6 +10,7 @@ import {
 } from '../../game/profiles/store';
 import { downscaleImage } from '../../game/profiles/photo';
 import { exportProfilesToJson, importProfiles, parseBackup } from '../../game/profiles/backup';
+import { MAX_PLAYER_NAME_LENGTH } from '../../game/players/constants';
 import { ProfileAvatar } from '../../components/ProfileAvatar/ProfileAvatar';
 import { logError } from '../../utils/logError';
 import styles from './Profiles.module.css';
@@ -34,7 +36,9 @@ export default function Profiles() {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    void (async () => {
+      await refresh();
+    })();
   }, [refresh]);
 
   const handleDelete = async (profile: TProfile) => {
@@ -69,7 +73,7 @@ export default function Profiles() {
     }
   };
 
-  const handleImportFile: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setBackupError(null);
     setBackupMessage(null);
     const file = e.target.files?.[0];
@@ -171,9 +175,7 @@ export default function Profiles() {
         </section>
       </main>
 
-      <Link className={styles.backBtn} to="/">
-        &larr; Back
-      </Link>
+      <BackLink />
 
       {editing && (
         <ProfileForm
@@ -206,7 +208,7 @@ function ProfileForm({
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handlePhotoChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhotoError(null);
     const file = e.target.files?.[0];
     // Reset the input so re-selecting the same file still fires a change.
@@ -273,7 +275,7 @@ function ProfileForm({
             type="text"
             className={styles.textInput}
             value={name}
-            maxLength={20}
+            maxLength={MAX_PLAYER_NAME_LENGTH}
             placeholder="e.g. Grandpa"
             onChange={(e) => setName(e.target.value)}
             autoFocus

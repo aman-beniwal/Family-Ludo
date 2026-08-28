@@ -1,3 +1,5 @@
+import * as z from 'zod';
+import { logError } from '../../utils/logError';
 import type { TFaceCounts, TRollHistoryEntry } from '../../types/rollHistory';
 
 export const ROLL_HISTORY_KEY = 'libreludo-roll-history';
@@ -17,28 +19,35 @@ export function emptyFaceCounts(): TFaceCounts {
   return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
 }
 
-const VALID_FACES = [1, 2, 3, 4, 5, 6];
-
-function isValidStoredHistory(value: unknown): value is TStoredRollHistory {
-  if (typeof value !== 'object' || value === null) return false;
-  const v = value as Record<string, unknown>;
-  if (!Array.isArray(v.entries)) return false;
-  if (typeof v.totalRolls !== 'number') return false;
-  if (typeof v.faceCounts !== 'object' || v.faceCounts === null) return false;
-  const fc = v.faceCounts as Record<string, unknown>;
-  return VALID_FACES.every((f) => typeof fc[String(f)] === 'number');
-}
+const faceCountSchema = z.number();
+const storedRollHistorySchema = z.object({
+  entries: z.array(
+    z.object({
+      colour: z.enum(['blue', 'red', 'green', 'yellow']),
+      value: z.number(),
+      timestamp: z.number(),
+    })
+  ),
+  faceCounts: z.object({
+    1: faceCountSchema,
+    2: faceCountSchema,
+    3: faceCountSchema,
+    4: faceCountSchema,
+    5: faceCountSchema,
+    6: faceCountSchema,
+  }),
+  totalRolls: z.number(),
+});
 
 export function loadRollHistory(): TStoredRollHistory | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = localStorage.getItem(ROLL_HISTORY_KEY);
     if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    if (!isValidStoredHistory(parsed)) return null;
-    return parsed;
+    const result = storedRollHistorySchema.safeParse(JSON.parse(raw));
+    return result.success ? result.data : null;
   } catch (e) {
-    console.error(e);
+    logError('rollHistory.load')(e);
     return null;
   }
 }
@@ -48,6 +57,6 @@ export function saveRollHistory(history: TStoredRollHistory): void {
   try {
     localStorage.setItem(ROLL_HISTORY_KEY, JSON.stringify(history));
   } catch (e) {
-    console.error(e);
+    logError('rollHistory.save')(e);
   }
 }

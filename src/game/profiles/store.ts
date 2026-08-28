@@ -84,6 +84,12 @@ function generateId(): string {
   return `p_${Date.now()}_${Math.floor(Math.random() * 1e9)}`;
 }
 
+// In-memory cache keyed by id. The play screen and the finish screen both read
+// the same profile's photo, so this serves repeat lookups without reopening an
+// IndexedDB transaction each time. All writes go through this module, so it
+// stays coherent; every read populates it and every write updates it.
+const profileCache = new Map<string, TProfile | undefined>();
+
 export async function createProfile(input: {
   name: string;
   photoBlob: Blob | null;
@@ -96,20 +102,32 @@ export async function createProfile(input: {
   };
   void requestPersistentStorage();
   await runTransaction('readwrite', (store) => store.add(profile));
+  profileCache.set(profile.id, profile);
   return profile;
 }
 
 export async function listProfiles(): Promise<TProfile[]> {
-  const all = await runTransaction<TProfile[]>('readonly', (store) => store.getAll());
+  const all = await runTransaction<TProfile[]>(
+    'readonly',
+    (store) => store.getAll() as IDBRequest<TProfile[]>
+  );
+  for (const p of all) profileCache.set(p.id, p);
   return all.sort((a, b) => a.createdAt - b.createdAt);
 }
 
 export async function getProfile(id: string): Promise<TProfile | undefined> {
-  return runTransaction<TProfile | undefined>('readonly', (store) => store.get(id));
+  if (profileCache.has(id)) return profileCache.get(id);
+  const profile = await runTransaction<TProfile | undefined>(
+    'readonly',
+    (store) => store.get(id) as IDBRequest<TProfile | undefined>
+  );
+  profileCache.set(id, profile);
+  return profile;
 }
 
 export async function updateProfile(profile: TProfile): Promise<TProfile> {
   await runTransaction('readwrite', (store) => store.put(profile));
+  profileCache.set(profile.id, profile);
   return profile;
 }
 
@@ -117,8 +135,16 @@ export async function updateProfile(profile: TProfile): Promise<TProfile> {
 export async function putProfile(profile: TProfile): Promise<void> {
   void requestPersistentStorage();
   await runTransaction('readwrite', (store) => store.put(profile));
+  profileCache.set(profile.id, profile);
 }
 
 export async function deleteProfile(id: string): Promise<void> {
   await runTransaction('readwrite', (store) => store.delete(id));
+  profileCache.delete(id);
+}
+
+// Test-only: clears the in-memory cache so suites that reset IndexedDB directly
+// start from a clean slate.
+export function __resetProfileCacheForTests(): void {
+  profileCache.clear();
 }

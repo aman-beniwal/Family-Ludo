@@ -4,6 +4,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  __resetProfileCacheForTests,
   createProfile,
   deleteProfile,
   DB_NAME,
@@ -25,6 +26,7 @@ function resetDB(): Promise<void> {
 
 beforeEach(async () => {
   await resetDB();
+  __resetProfileCacheForTests();
 });
 
 describe('profile store', () => {

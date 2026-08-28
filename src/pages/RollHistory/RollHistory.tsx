@@ -1,18 +1,12 @@
-import { Link, type MetaFunction } from 'react-router';
+import { type MetaFunction } from 'react-router';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../state/store';
-import type { TPlayerColour } from '../../types';
 import { H } from '../../components/H/H';
+import { BackLink } from '../../components/BackLink/BackLink';
+import { playerColours } from '../../game/players/constants';
 import styles from './RollHistory.module.css';
 
 const FACES = [1, 2, 3, 4, 5, 6] as const;
-
-const COLOUR_HEX: Record<TPlayerColour, string> = {
-  blue: '#2563eb',
-  red: '#dc2626',
-  green: '#16a34a',
-  yellow: '#eab308',
-};
 
 function formatTime(timestamp: number): string {
   try {
@@ -79,7 +73,7 @@ export default function RollHistory() {
                 <li key={`${entry.timestamp}-${i}`} className={styles.recentItem}>
                   <span
                     className={styles.dot}
-                    style={{ backgroundColor: COLOUR_HEX[entry.colour] }}
+                    style={{ backgroundColor: playerColours[entry.colour] }}
                     aria-label={entry.colour}
                     title={entry.colour}
                   />
@@ -92,9 +86,7 @@ export default function RollHistory() {
         </section>
       </main>
 
-      <Link className={styles.backBtn} to="/">
-        &larr; Back
-      </Link>
+      <BackLink />
     </div>
   );
 }

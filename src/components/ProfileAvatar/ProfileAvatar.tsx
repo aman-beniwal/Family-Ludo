@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import styles from './ProfileAvatar.module.css';
 import clsx from 'clsx';
 
@@ -15,17 +15,13 @@ type Props = {
  * manager and the setup picker.
  */
 export function ProfileAvatar({ name, photoBlob, size = 64, className }: Props) {
-  const [url, setUrl] = useState<string | null>(null);
-
+  // Derive the object URL from the blob and revoke it when the blob changes or
+  // the component unmounts. Kept out of state so no effect writes state.
+  const url = useMemo(() => (photoBlob ? URL.createObjectURL(photoBlob) : null), [photoBlob]);
   useEffect(() => {
-    if (!photoBlob) {
-      setUrl(null);
-      return;
-    }
-    const objectUrl = URL.createObjectURL(photoBlob);
-    setUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [photoBlob]);
+    if (!url) return;
+    return () => URL.revokeObjectURL(url);
+  }, [url]);
 
   const initial = name.trim().charAt(0).toUpperCase() || '?';
 

@@ -19,17 +19,14 @@ export function ProfilePhoto({ profileId, name, size, className }: Props) {
 
   useEffect(() => {
     let active = true;
-    if (!profileId) {
-      setPhotoBlob(null);
-      return;
-    }
-    getProfile(profileId)
-      .then((profile) => {
-        if (active) setPhotoBlob(profile?.photoBlob ?? null);
-      })
-      .catch(() => {
+    void (async () => {
+      try {
+        const blob = profileId ? ((await getProfile(profileId))?.photoBlob ?? null) : null;
+        if (active) setPhotoBlob(blob);
+      } catch {
         if (active) setPhotoBlob(null);
-      });
+      }
+    })();
     return () => {
       active = false;
     };
