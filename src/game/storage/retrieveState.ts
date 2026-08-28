@@ -1,5 +1,4 @@
-import { generateRollBag } from '../../state/slices/diceSlice';
-import type { TPlayerColour, TToken } from '../../types';
+import type { TToken } from '../../types';
 import { playerSequences } from '../players/constants';
 import { playerCountToWord } from '../players/logic';
 import { TOKEN_LOCKED_COORDINATES } from '../tokens/constants';
@@ -41,10 +40,6 @@ export const retrieveState = (currentState: RootState): TResult<RootState, Error
       ...d,
       isPlaceholderShowing: false,
     });
-  }
-
-  for (const key of Object.keys(newState.dice.rollBag)) {
-    newState.dice.rollBag[key as TPlayerColour] = generateRollBag();
   }
 
   for (const p of data.players) {
