@@ -8,6 +8,7 @@ import {
   updateProfile,
 } from '../../game/profiles/store';
 import { downscaleImage } from '../../game/profiles/photo';
+import { exportProfilesToJson, importProfiles, parseBackup } from '../../game/profiles/backup';
 import { ProfileAvatar } from '../../components/ProfileAvatar/ProfileAvatar';
 import { logError } from '../../utils/logError';
 import styles from './Profiles.module.css';
@@ -18,6 +19,9 @@ export default function Profiles() {
   const [profiles, setProfiles] = useState<TProfile[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [editing, setEditing] = useState<EditTarget>(null);
+  const [backupMessage, setBackupMessage] = useState<string | null>(null);
+  const [backupError, setBackupError] = useState<string | null>(null);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -41,6 +45,45 @@ export default function Profiles() {
     } catch (e) {
       logError('Profiles.delete')(e);
       alert('Sorry, that profile could not be deleted.');
+    }
+  };
+
+  const handleExport = async () => {
+    setBackupError(null);
+    setBackupMessage(null);
+    try {
+      const json = await exportProfilesToJson(Date.now());
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'libreludo-players-backup.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setBackupMessage('Backup saved. Keep it somewhere safe (e.g. the Files app).');
+    } catch (e) {
+      logError('Profiles.export')(e);
+      setBackupError('Could not create a backup.');
+    }
+  };
+
+  const handleImportFile: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    setBackupError(null);
+    setBackupMessage(null);
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = parseBackup(text);
+      const count = await importProfiles(parsed);
+      await refresh();
+      setBackupMessage(`Restored ${count} player${count === 1 ? '' : 's'} from backup.`);
+    } catch (err) {
+      logError('Profiles.import')(err);
+      setBackupError(err instanceof Error ? err.message : 'That backup could not be imported.');
     }
   };
 
@@ -97,6 +140,35 @@ export default function Profiles() {
             </button>
           </>
         )}
+
+        <section className={styles.backup}>
+          <h2>Backup</h2>
+          <p className={styles.backupHint}>
+            Photos live only on this iPad. Export a backup file and keep it somewhere safe so you
+            can restore your players if the device data is ever lost.
+          </p>
+          <div className={styles.backupActions}>
+            <button type="button" className={styles.secondaryBtn} onClick={() => void handleExport()}>
+              Export backup
+            </button>
+            <button
+              type="button"
+              className={styles.secondaryBtn}
+              onClick={() => importInputRef.current?.click()}
+            >
+              Import backup
+            </button>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              className={styles.hiddenInput}
+              onChange={(e) => void handleImportFile(e)}
+            />
+          </div>
+          {backupMessage && <p className={styles.success}>{backupMessage}</p>}
+          {backupError && <p className={styles.error}>{backupError}</p>}
+        </section>
       </main>
 
       <Link className={styles.backBtn} to="/">
