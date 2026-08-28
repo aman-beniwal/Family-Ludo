@@ -4,6 +4,8 @@ import { useDispatch, useStore } from 'react-redux';
 import type { TPlayerColour } from '../types';
 import { setIsPlaceholderShowing, setDiceNumber } from '../state/slices/diceSlice';
 import { rollFairDie } from '../game/dice/rollFairDie';
+import { addRollHistoryEntry } from '../state/slices/rollHistorySlice';
+import { saveRollHistory } from '../game/storage/rollHistory';
 import { saveState } from '../game/storage/saveState';
 import { sleep } from '../utils/sleep';
 import { ERRORS } from '../utils/errors';
@@ -23,6 +25,10 @@ export const useRollDice = () => {
       const diceNumber = rollFairDie();
       dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: false }));
       dispatch(setDiceNumber({ colour, value: diceNumber }));
+      // Record the finalized roll and persist the running history so per-face
+      // counts accumulate across sessions (R5).
+      dispatch(addRollHistoryEntry({ colour, value: diceNumber, timestamp: Date.now() }));
+      saveRollHistory(store.getState().rollHistory);
       saveState(store.getState());
       return diceNumber;
     },

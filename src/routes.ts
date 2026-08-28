@@ -5,5 +5,6 @@ export default [
   route('play', 'pages/Play/Play.tsx'),
   route('setup', 'pages/PlayerSetup/PlayerSetup.tsx'),
   route('how-to-play', 'pages/HowToPlay/HowToPlay.tsx'),
+  route('history', 'pages/RollHistory/RollHistory.tsx'),
   route('*', 'pages/NotFound/NotFound.tsx'),
 ] satisfies RouteConfig;

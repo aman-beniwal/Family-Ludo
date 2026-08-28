@@ -20,6 +20,9 @@ export const retrieveState = (currentState: RootState): TResult<RootState, Error
 
   const newState: RootState = {
     board: { ...currentState.board },
+    // Roll history is a cross-session, cross-game log — carry the live value
+    // forward so resuming a saved game never wipes accumulated fairness counts.
+    rollHistory: structuredClone(currentState.rollHistory),
     dice: structuredClone(initialDiceState),
     players: {
       currentPlayerColour: data.currentPlayerColour,

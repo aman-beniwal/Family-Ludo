@@ -8,6 +8,7 @@ import playersReducer from './slices/playersSlice';
 import boardReducer from './slices/boardSlice';
 import diceReducer from './slices/diceSlice';
 import sessionReducer from './slices/sessionSlice';
+import rollHistoryReducer from './slices/rollHistorySlice';
 
 export const hydrateRootState = createAction<RootState>('root/hydrateState');
 
@@ -16,6 +17,7 @@ const appReducer = combineReducers({
   board: boardReducer,
   dice: diceReducer,
   session: sessionReducer,
+  rollHistory: rollHistoryReducer,
 });
 
 const rootReducer = (state: RootState | undefined, action: PayloadAction<RootState>) => {
