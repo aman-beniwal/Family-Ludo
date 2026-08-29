@@ -4,8 +4,12 @@ import { useCleanup } from '../../hooks/useCleanup';
 import styles from './HomePage.module.css';
 import clsx from 'clsx';
 import { H } from '../../components/H/H';
+import { playerColours } from '../../game/players/constants';
+import type { TPlayerColour } from '../../types';
 
-const LUDO_COLOURS = ['red', 'green', 'yellow', 'blue'] as const;
+// The four Ludo colours, from the single source of truth so the decorative
+// pawn row can never drift from the rest of the app.
+const LUDO_COLOURS = Object.keys(playerColours) as TPlayerColour[];
 
 export default function HomePage() {
   const cleanup = useCleanup();

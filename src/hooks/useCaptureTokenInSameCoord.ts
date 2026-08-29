@@ -1,4 +1,4 @@
-import { useDispatch, useStore } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import {
   deactivateAllTokens,
   lockToken,
@@ -17,12 +17,9 @@ import { tokenMotionRegistry } from '../game/movement/tokenMotionRegistry';
 import { sleep } from '../utils/sleep';
 import { playSound } from '../game/sound/soundManager';
 import { vibrate } from '../utils/haptics';
-import { saveState } from '../game/storage/saveState';
-import type { RootState } from '../state/store';
 
 export function useCaptureTokenInSameCoord() {
   const dispatch = useDispatch();
-  const store = useStore<RootState>();
   const getPosition = useCoordsToPosition();
 
   return useCallback(
@@ -79,10 +76,10 @@ export function useCaptureTokenInSameCoord() {
       }
       if (animationPromises.length !== 0) await Promise.all(animationPromises);
       dispatch(setIsAnyTokenMoving(false));
-      // Persist after the movement lock clears so the updated kill/death counts
-      // (and the captured tokens' locked positions) survive an immediate reload.
-      if (captureData.length > 0) saveState(store.getState());
+      // No save here: the caller persists the final state after the capture
+      // (executeTokenMove for humans, the follow-up rollDice for bots), by
+      // which point recordCapture's kill/death counts are already in the store.
     },
-    [dispatch, getPosition, store]
+    [dispatch, getPosition]
   );
 }
