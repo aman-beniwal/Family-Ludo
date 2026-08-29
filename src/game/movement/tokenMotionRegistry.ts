@@ -7,7 +7,10 @@ type TokenMotionEntry = {
   animateTo: (
     x: number,
     y: number,
-    transition: { duration: number; ease: Easing }
+    transition: { duration: number; ease: Easing },
+    // When > 0, the token arcs up by this many px mid-move and lands on target,
+    // giving a block-to-block bounce. Omitted/0 = straight move (e.g. capture).
+    hopHeight?: number
   ) => Promise<void>;
   // Plays the capture impact flash on the token. Owned by the Token component,
   // which holds the DOM node and its CSS module, so hooks never reach into a

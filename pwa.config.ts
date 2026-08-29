@@ -11,13 +11,14 @@ export const pwaOptions: Partial<VitePWAOptions> = {
   injectRegister: false,
   scope: BASE,
   manifest: {
-    name: 'LibreLudo',
-    short_name: 'LibreLudo',
+    name: 'Family Ludo',
+    short_name: 'Family Ludo',
     description:
       'A modern, ad-free, open-source Ludo game with a clean UI, local multiplayer, and bot opponents.',
     start_url: BASE,
     scope: BASE,
     display: 'standalone',
+    orientation: 'portrait',
     background_color: '#ffffff',
     theme_color: '#7C5FFF',
     icons: [

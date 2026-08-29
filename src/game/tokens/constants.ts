@@ -5,13 +5,18 @@ import type { TTokenDirection, TTokenPath } from '../../types/tokens';
 export const transitionStates = {
   forward: {
     timingFn: 'easeInOut',
-    durationMs: 300,
+    durationMs: 150,
   },
   backward: {
+    // Captured tokens snap home fast.
     timingFn: 'linear',
-    durationMs: 100,
+    durationMs: 40,
   },
 } as const satisfies Record<TTokenDirection, { durationMs: number; timingFn: Easing }>;
+
+// Height of the per-tile hop during a forward move, as a fraction of the token
+// height — gives the pawn a bounce as it travels block to block.
+export const FORWARD_HOP_FRACTION = 0.5;
 
 export const GENERAL_TOKEN_PATH: TTokenPath[] = [
   {

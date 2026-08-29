@@ -9,7 +9,7 @@ import { deactivateAllTokens, getToken, setIsAnyTokenMoving } from '../state/sli
 import { tokenMotionRegistry } from '../game/movement/tokenMotionRegistry';
 import { getGloballyUniqueTokenId } from '../game/tokens/logic';
 import { useCoordsToPosition } from './useCoordsToPosition';
-import { transitionStates } from '../game/tokens/constants';
+import { transitionStates, FORWARD_HOP_FRACTION } from '../game/tokens/constants';
 import { playSound } from '../game/sound/soundManager';
 
 export const useMoveTokenForward = () => {
@@ -31,12 +31,13 @@ export const useMoveTokenForward = () => {
       const entry = tokenMotionRegistry.get(getGloballyUniqueTokenId(colour, id));
       if (!entry) return;
       entry.setExternallyAnimating(true);
+      const hopHeight = store.getState().board.tokenHeight * FORWARD_HOP_FRACTION;
       for (const coord of moveSequence) {
         updateTokenPositionAndAlignment({ colour, id, newCoords: coord, direction: 'forward' });
         const updatedToken = getToken(store.getState().players, colour, id);
         const { x, y } = getPosition(coord, updatedToken.tokenAlignmentData);
         playSound('move');
-        await entry.animateTo(x, y, { duration: durationMs / 1000, ease: timingFn });
+        await entry.animateTo(x, y, { duration: durationMs / 1000, ease: timingFn }, hopHeight);
       }
       entry.setExternallyAnimating(false);
       dispatch(setIsAnyTokenMoving(false));

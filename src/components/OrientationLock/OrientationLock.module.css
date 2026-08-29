@@ -1,0 +1,59 @@
+/* Hidden by default. The overlay only appears on touch devices held in
+ * landscape, nudging the player back to portrait. Portrait is the only
+ * supported layout (the installed PWA is locked to it via the manifest; this
+ * covers Safari before install, where iOS ignores orientation locks). */
+.overlay {
+  display: none;
+}
+
+@media (orientation: landscape) and (pointer: coarse) {
+  .overlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 2rem;
+    text-align: center;
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: 'Inter Variable', system-ui, sans-serif;
+  }
+
+  .icon {
+    font-size: 3.5rem;
+    line-height: 1;
+    animation: rotate-hint 2.4s ease-in-out infinite;
+  }
+
+  .title {
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    color: #64748b;
+    max-width: 22rem;
+  }
+}
+
+@keyframes rotate-hint {
+  0%,
+  40% {
+    transform: rotate(0deg);
+  }
+  60%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    animation: none;
+  }
+}

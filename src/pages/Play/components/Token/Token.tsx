@@ -81,10 +81,16 @@ export default function Token({ colour, id, tokenClickData }: Props) {
       setExternallyAnimating: (v) => {
         isExternallyAnimating.current = v;
       },
-      animateTo: (x, y, transition) =>
-        Promise.all([animate(motionX, x, transition), animate(motionY, y, transition)]).then(
-          () => {}
-        ),
+      animateTo: (x, y, transition, hopHeight = 0) => {
+        // A hop arcs the token up mid-move and lands on the target tile; a plain
+        // move animates straight to y.
+        const yTarget =
+          hopHeight > 0 ? [motionY.get(), Math.min(motionY.get(), y) - hopHeight, y] : y;
+        return Promise.all([
+          animate(motionX, x, transition),
+          animate(motionY, yTarget, transition),
+        ]).then(() => {});
+      },
       flashCapture: () => {
         const el = tokenElRef.current;
         if (!el) return;

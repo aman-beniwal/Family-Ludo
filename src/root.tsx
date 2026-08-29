@@ -4,6 +4,7 @@ import { store } from './state/store';
 import { PWAUpdater } from './components/PWAUpdater/PWAUpdater';
 import { RollHistoryHydrator } from './components/RollHistoryHydrator/RollHistoryHydrator';
 import { SoundUnlocker } from './components/SoundUnlocker/SoundUnlocker';
+import { OrientationLock } from './components/OrientationLock/OrientationLock';
 import ErrorBoundaryPage from './pages/ErrorBoundary/ErrorBoundary';
 import './fonts.css';
 import './index.css';
@@ -70,6 +71,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <RollHistoryHydrator />
           <SoundUnlocker />
           {children}
+          <OrientationLock />
         </Provider>
         <ScrollRestoration />
         <Scripts />
