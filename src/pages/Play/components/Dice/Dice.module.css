@@ -94,17 +94,49 @@
   --player-label-width: 5;
 }
 
+/* Name stacked over a small stats row (captures / tokens lost), so the panel
+   reads like the reference layout without widening the fixed label box. */
+.info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: calc(var(--board-tile-size) * 0.08);
+}
+
+.green .info,
+.yellow .info {
+  align-items: flex-end;
+}
+
 .player-name {
   font-weight: bold;
   font-size: calc(var(--board-tile-size) * 0.45);
   cursor: default;
   min-width: 0;
-  flex: 1 1 auto;
   /* Truncate rather than wrap/overflow, so a long name + photo can never push
      the label past its box and overlap a neighbour. */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.stats {
+  display: flex;
+  gap: calc(var(--board-tile-size) * 0.4);
+  font-size: calc(var(--board-tile-size) * 0.36);
+  color: #333;
+  cursor: default;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--board-tile-size) * 0.1);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 @keyframes dice-roll {

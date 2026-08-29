@@ -19,6 +19,7 @@ import { useHandlePostDiceRoll } from '../../../../hooks/useHandlePostDiceRoll';
 import { useChangeTurn } from '../../../../hooks/useChangeTurn';
 import { logError } from '../../../../utils/logError';
 import { ProfilePhoto } from '../../../../components/ProfilePhoto/ProfilePhoto';
+import { H } from '../../../../components/H/H';
 
 type Props = {
   colour: TPlayerColour;
@@ -62,7 +63,10 @@ export default function Dice({ colour, playerName, profileId }: Props) {
   const handlePostDiceRoll = useHandlePostDiceRoll();
   const changeTurnFn = useChangeTurn();
   const rollDice = useRollDice();
-  const isBot = players.find((p) => p.colour === colour)?.isBot;
+  const player = players.find((p) => p.colour === colour);
+  const isBot = player?.isBot;
+  const kills = player?.kills ?? 0;
+  const deaths = player?.deaths ?? 0;
   const isCurrentPlayer = currentPlayer === colour;
   const isDiceDisabled =
     !isCurrentPlayer ||
@@ -109,7 +113,21 @@ export default function Dice({ colour, playerName, profileId }: Props) {
       </button>
       <span className={styles.playerLabel}>
         <ProfilePhoto profileId={profileId} name={playerName} size={22} />
-        <span className={styles.playerName}>{playerName}</span>
+        <span className={styles.info}>
+          <span className={styles.playerName}>{playerName}</span>
+          <span className={styles.stats}>
+            <span className={styles.stat} title="Captures made" aria-label={`${kills} captures made`}>
+              <H c="⚔️" /> {kills}
+            </span>
+            <span
+              className={styles.stat}
+              title="Tokens sent home by others"
+              aria-label={`${deaths} tokens sent home`}
+            >
+              <H c="💀" /> {deaths}
+            </span>
+          </span>
+        </span>
       </span>
     </div>
   );
