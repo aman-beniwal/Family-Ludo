@@ -11,7 +11,9 @@ import { saveState } from '../game/storage/saveState';
 import { sleep } from '../utils/sleep';
 import { ERRORS } from '../utils/errors';
 
-const DICE_PLACEHOLDER_DELAY = 1000;
+// Kept short so the roll feels snappy — the fair value is picked the moment
+// the brief spin ends (the previous 1000ms felt very slow).
+const DICE_PLACEHOLDER_DELAY = 350;
 
 export const useRollDice = () => {
   const store = useStore<RootState>();

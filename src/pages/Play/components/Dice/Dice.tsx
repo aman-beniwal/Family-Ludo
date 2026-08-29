@@ -92,6 +92,7 @@ export default function Dice({ colour, playerName, profileId }: Props) {
       <button
         className={clsx(styles.dice, {
           [styles.active]: !isDiceDisabled,
+          [styles.rolling]: isPlaceholderShowing,
         })}
         tabIndex={isDiceDisabled ? -1 : undefined}
         title={!isDiceDisabled ? 'Roll Dice (Press D)' : undefined}
