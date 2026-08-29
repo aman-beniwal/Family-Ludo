@@ -105,7 +105,7 @@ export default function HomePage() {
           <small className={styles.copyright}>
             Copyright &copy; 2025&ndash;{new Date().getFullYear()} Priyanshu Rav &middot;{' '}
             <a
-              href="/LICENSE.txt"
+              href={`${import.meta.env.BASE_URL}LICENSE.txt`}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Read the LibreLudo AGPLv3 License"
@@ -127,7 +127,7 @@ export default function HomePage() {
             <GitHubLogo />
           </a>
           <a
-            href="/THIRD_PARTY_LICENSES.txt"
+            href={`${import.meta.env.BASE_URL}THIRD_PARTY_LICENSES.txt`}
             target="_blank"
             aria-label="Third Party Open Source Licenses"
             title="Third Party Open Source Licenses"

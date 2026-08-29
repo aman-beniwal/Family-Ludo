@@ -6,13 +6,16 @@ import { logError } from '../../utils/logError';
 
 export type SoundName = 'diceRoll' | 'move' | 'capture' | 'home' | 'turn' | 'win';
 
+// BASE_URL is '/' locally and '/Family-Ludo/' on the GitHub Pages build, so the
+// fetched URL matches the service worker's precached URL in both.
+const BASE = import.meta.env.BASE_URL;
 export const SOUND_FILES: Record<SoundName, string> = {
-  diceRoll: '/sounds/diceRoll.wav',
-  move: '/sounds/move.wav',
-  capture: '/sounds/capture.wav',
-  home: '/sounds/home.wav',
-  turn: '/sounds/turn.wav',
-  win: '/sounds/win.wav',
+  diceRoll: `${BASE}sounds/diceRoll.wav`,
+  move: `${BASE}sounds/move.wav`,
+  capture: `${BASE}sounds/capture.wav`,
+  home: `${BASE}sounds/home.wav`,
+  turn: `${BASE}sounds/turn.wav`,
+  win: `${BASE}sounds/win.wav`,
 };
 
 export const SOUND_MUTED_KEY = 'libreludo-sound-muted';

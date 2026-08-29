@@ -1,28 +1,34 @@
 import type { VitePWAOptions } from 'vite-plugin-pwa';
 
+// Must match Vite `base`. The manifest/scope/fallback are absolute URLs, so they
+// carry the subpath explicitly; change this alongside `base` for a root deploy.
+const BASE = '/Family-Ludo/';
+
 export const pwaOptions: Partial<VitePWAOptions> = {
   outDir: 'build/client',
   registerType: 'prompt',
   filename: 'sw.js',
   injectRegister: false,
+  scope: BASE,
   manifest: {
     name: 'LibreLudo',
     short_name: 'LibreLudo',
     description:
       'A modern, ad-free, open-source Ludo game with a clean UI, local multiplayer, and bot opponents.',
-    start_url: '/',
+    start_url: BASE,
+    scope: BASE,
     display: 'standalone',
     background_color: '#ffffff',
     theme_color: '#7C5FFF',
     icons: [
       {
-        src: '/icons/favicon.png',
+        src: `${BASE}icons/favicon.png`,
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any',
       },
       {
-        src: '/icons/favicon.svg',
+        src: `${BASE}icons/favicon.svg`,
         sizes: 'any',
         type: 'image/svg+xml',
         purpose: 'maskable',
@@ -42,7 +48,7 @@ export const pwaOptions: Partial<VitePWAOptions> = {
       /LICENSE\.txt$/,
       /THIRD_PARTY_LICENSES\.txt$/,
     ],
-    navigateFallback: '/index.html',
+    navigateFallback: `${BASE}index.html`,
     mode: process.env.NODE_ENV,
     maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB
     cleanupOutdatedCaches: true,

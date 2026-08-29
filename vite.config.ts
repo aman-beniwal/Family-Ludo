@@ -13,6 +13,9 @@ import path from 'node:path';
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Served from a GitHub Pages project subpath (https://<user>.github.io/Family-Ludo/).
+  // A root-hosted deploy (Cloudflare/Netlify/Vercel) can set this back to '/'.
+  base: '/Family-Ludo/',
   test: {
     environment: 'jsdom',
     coverage: {
