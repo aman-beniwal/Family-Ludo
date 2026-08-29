@@ -21,29 +21,75 @@
 
 .bouncer {
   display: block;
+  position: relative;
   width: 100%;
   height: 100%;
 
   &.active {
-    animation: bounce 0.7s ease-in-out infinite;
     cursor: pointer;
   }
 }
 
+/* Whose-turn cue: an animated ring around the active player's movable tokens.
+   Colour-independent (neutral dark outline + white glow) so it stays clearly
+   visible on all four player colours and on light tiles — far more prominent
+   than the old subtle bounce. */
+.bouncer.active::before {
+  content: '';
+  position: absolute;
+  inset: -16%;
+  border-radius: 50%;
+  border: 2.5px dashed rgba(20, 20, 20, 0.85);
+  box-shadow:
+    0 0 5px 1px rgba(255, 255, 255, 0.95),
+    inset 0 0 5px 1px rgba(255, 255, 255, 0.9);
+  animation: ring-spin 3s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Soft expanding halo behind the ring adds a pulse of prominence. */
+.bouncer.active::after {
+  content: '';
+  position: absolute;
+  inset: -16%;
+  border-radius: 50%;
+  animation: ring-pulse 1.5s ease-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .svg {
   display: block;
+  position: relative;
+  z-index: 3;
   width: 100%;
   height: 100%;
   transform: translate3d(0, 0, 0);
 }
 
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
+@keyframes ring-spin {
+  to {
+    transform: rotate(360deg);
   }
-  50% {
-    transform: translate3d(0, -8px, 0);
+}
+
+@keyframes ring-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.35);
+  }
+  100% {
+    box-shadow: 0 0 0 7px rgba(0, 0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bouncer.active::before {
+    animation: none;
+  }
+  .bouncer.active::after {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.25);
   }
 }
 

@@ -5,7 +5,7 @@ import type { TTokenDirection, TTokenPath } from '../../types/tokens';
 export const transitionStates = {
   forward: {
     timingFn: 'easeInOut',
-    durationMs: 500,
+    durationMs: 300,
   },
   backward: {
     timingFn: 'linear',
