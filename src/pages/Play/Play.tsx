@@ -27,4 +27,4 @@ export default function Play() {
   return !initData && !saveExists() ? <Navigate to="/setup" /> : <Game initData={initData} />;
 }
 
-export const meta: MetaFunction = () => [{ title: 'Play LibreLudo' }];
+export const meta: MetaFunction = () => [{ title: 'Play Family Ludo' }];

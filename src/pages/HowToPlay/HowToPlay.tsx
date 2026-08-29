@@ -15,10 +15,10 @@ export default function HowToPlay() {
       <main className={styles.howToPlay}>
         <section className={styles.introduction}>
           <h1>
-            <H c="🎲" /> How to Play LibreLudo
+            <H c="🎲" /> How to Play Family Ludo
           </h1>
           <p>
-            Welcome to the colorful world of LibreLudo! Whether you're new or need a refresher,
+            Welcome to the colorful world of Family Ludo! Whether you're new or need a refresher,
             here's everything you need to know to play and win.
           </p>
         </section>
@@ -255,4 +255,4 @@ export default function HowToPlay() {
   );
 }
 
-export const meta: MetaFunction = () => [{ title: 'LibreLudo - How to Play' }];
+export const meta: MetaFunction = () => [{ title: 'Family Ludo - How to Play' }];

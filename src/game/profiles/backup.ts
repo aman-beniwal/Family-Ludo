@@ -82,7 +82,7 @@ export function parseBackup(text: string): TProfile[] {
   }
   const shell = backupShellSchema.safeParse(parsed);
   if (!shell.success) {
-    throw new Error('This file is not a LibreLudo profiles backup.');
+    throw new Error('This file is not a Family Ludo profiles backup.');
   }
   const entries = z.array(backupEntrySchema).safeParse(shell.data.profiles);
   if (!entries.success) {

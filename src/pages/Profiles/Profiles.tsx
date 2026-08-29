@@ -302,4 +302,4 @@ function ProfileForm({
   );
 }
 
-export const meta: MetaFunction = () => [{ title: 'LibreLudo - Players' }];
+export const meta: MetaFunction = () => [{ title: 'Family Ludo - Players' }];

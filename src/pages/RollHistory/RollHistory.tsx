@@ -91,4 +91,4 @@ export default function RollHistory() {
   );
 }
 
-export const meta: MetaFunction = () => [{ title: 'LibreLudo - Roll History & Fairness' }];
+export const meta: MetaFunction = () => [{ title: 'Family Ludo - Roll History & Fairness' }];

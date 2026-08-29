@@ -18,7 +18,6 @@ import {
   retrieveSaveFromStorage,
   saveExists,
 } from '../../game/storage/storage';
-import GitHubLogo from '../../assets/icons/github-mark-white.svg?react';
 import { SAVE_VERSION } from '../../game/storage/constants';
 import { logError } from '../../utils/logError';
 
@@ -209,16 +208,6 @@ export default function PlayerSetup() {
       <Link to="/" className={styles.goToHome}>
         <HomeIcon />
       </Link>
-      <a
-        href="https://github.com/priyanshurav"
-        rel="noopener noreferrer"
-        target="_blank"
-        className={styles.ghFollowBtn}
-        aria-label="Follow @priyanshurav on GitHub"
-      >
-        <GitHubLogo aria-hidden="true" />
-        Follow&nbsp;@priyanshurav
-      </a>
       <ToastContainer position="top-center" />
       <Tooltip
         id="bot-status-tooltip"
@@ -239,4 +228,4 @@ export default function PlayerSetup() {
   );
 }
 
-export const meta: MetaFunction = () => [{ title: 'LibreLudo - Player Setup' }];
+export const meta: MetaFunction = () => [{ title: 'Family Ludo - Player Setup' }];
