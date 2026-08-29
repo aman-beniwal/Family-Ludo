@@ -40,7 +40,12 @@ let muted = false;
 let volume = DEFAULT_VOLUME;
 let settingsLoaded = false;
 
-const elements: Partial<Record<SoundName, HTMLAudioElement>> = {};
+// A small pool of pre-warmed players per sound. Pooling means a rapid retrigger
+// (or two effects at once) grabs a ready element instead of seeking one that's
+// mid-play, which is the main source of audible lag on iOS media elements.
+const POOL_SIZE = 3;
+const pools: Partial<Record<SoundName, HTMLAudioElement[]>> = {};
+const poolIdx: Partial<Record<SoundName, number>> = {};
 let unlocked = false;
 let unlocking: Promise<void> | null = null;
 
@@ -122,7 +127,7 @@ export function getServerSnapshot(): Snapshot {
 
 /** True only when a real, playable sound is available and not muted. */
 export function canPlay(name: SoundName): boolean {
-  return !muted && unlocked && elements[name] !== undefined;
+  return !muted && unlocked && (pools[name]?.length ?? 0) > 0;
 }
 
 /**
@@ -138,32 +143,54 @@ export function unlockAudio(): Promise<void> {
   unlocking = (async () => {
     try {
       const names = Object.keys(SOUND_FILES) as SoundName[];
-      // Kick off every element's gesture-unlock synchronously (before the first
-      // await), so each play() call stays inside the triggering user gesture.
-      await Promise.all(
-        names.map(async (name) => {
-          let el = elements[name];
-          if (!el) {
-            el = new Audio(SOUND_FILES[name]);
+      const jobs: Promise<void>[] = [];
+      // Build pools and kick off each element's gesture-unlock synchronously
+      // (before the first await) so every play() stays inside the user gesture.
+      for (const name of names) {
+        let pool = pools[name];
+        if (!pool) {
+          pool = [];
+          for (let i = 0; i < POOL_SIZE; i++) {
+            const el = new Audio(SOUND_FILES[name]);
             el.preload = 'auto';
             el.setAttribute('playsinline', '');
             el.setAttribute('webkit-playsinline', '');
-            elements[name] = el;
+            // Rewind when finished so the next play starts instantly with no
+            // seek on the hot path.
+            el.addEventListener('ended', () => {
+              try {
+                el.currentTime = 0;
+              } catch {
+                /* ignore */
+              }
+            });
+            pool.push(el);
           }
-          // Muted so the unlock is inaudible (iOS ignores .volume but honours
-          // .muted); flipped back off once activated.
+          pools[name] = pool;
+          poolIdx[name] = 0;
+        }
+        for (const el of pool) {
+          // Muted so the unlock/pre-warm is inaudible (iOS ignores .volume but
+          // honours .muted); flipped back off once activated. Playing through
+          // also forces a decode so the first real play isn't a cold start.
           el.muted = true;
-          try {
-            await el.play();
-            el.pause();
-            el.currentTime = 0;
-          } catch {
-            // Element stays usable; a later gesture or direct play can retry.
-          } finally {
-            el.muted = false;
-          }
-        })
-      );
+          jobs.push(
+            el
+              .play()
+              .then(() => {
+                el.pause();
+                el.currentTime = 0;
+              })
+              .catch(() => {
+                // Element stays usable; a later gesture or direct play retries.
+              })
+              .finally(() => {
+                el.muted = false;
+              })
+          );
+        }
+      }
+      await Promise.all(jobs);
       unlocked = true;
     } catch (e) {
       logError('sound.unlockAudio')(e);
@@ -179,12 +206,19 @@ export function unlockAudio(): Promise<void> {
 /** Plays a sound. A no-op when muted, during SSR, or before audio is unlocked. */
 export function playSound(name: SoundName): void {
   if (muted || !isBrowser()) return;
-  const el = elements[name];
-  if (!el) return;
+  const pool = pools[name];
+  if (!pool || pool.length === 0) return;
   try {
+    // Prefer an idle element so we never interrupt (and re-seek) a playing one;
+    // fall back to round-robin when every element is busy.
+    const idx = poolIdx[name] ?? 0;
+    const idle = pool.find((e) => e.paused || e.ended);
+    const el = idle ?? pool[idx];
+    poolIdx[name] = (idx + 1) % pool.length;
+
     el.muted = false;
     el.volume = clampVolume(volume); // honoured on desktop; ignored on iOS
-    el.currentTime = 0;
+    if (el.currentTime !== 0) el.currentTime = 0;
     void el.play()?.catch(() => {});
   } catch (e) {
     logError('sound.playSound')(e);
@@ -198,6 +232,9 @@ export function __resetSoundManagerForTests(): void {
   settingsLoaded = false;
   unlocked = false;
   unlocking = null;
-  for (const k of Object.keys(elements) as SoundName[]) delete elements[k];
+  for (const k of Object.keys(pools) as SoundName[]) {
+    delete pools[k];
+    delete poolIdx[k];
+  }
   snapshot = { muted, volume };
 }
