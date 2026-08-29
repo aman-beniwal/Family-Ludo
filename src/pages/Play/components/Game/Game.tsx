@@ -8,7 +8,6 @@ import GameFinishedScreen from '../GameFinishedScreen/GameFinishedScreen';
 import type { TPlayerInitData } from '../../../../types';
 import { useBlocker, useNavigate } from 'react-router';
 import { playerCountToWord } from '../../../../game/players/logic';
-import bg from '../../../../assets/bg.jpg';
 import { addToGameInactiveTime, setGameStartTime } from '../../../../state/slices/sessionSlice';
 import styles from './Game.module.css';
 import { retrieveState } from '../../../../game/storage/retrieveState';
@@ -135,7 +134,6 @@ export default function Game({ initData }: Props) {
         {
           '--board-tile-size': `${boardTileSize}px`,
           '--player-count': players.length,
-          backgroundImage: `url(${bg})`,
         } as React.CSSProperties
       }
     >

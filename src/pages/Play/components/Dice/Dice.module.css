@@ -49,12 +49,12 @@
 }
 
 .dice {
-  background-color: white;
-  border: 2px solid var(--player-colour);
+  background-color: transparent;
+  border: none;
   height: calc(var(--board-tile-size) * var(--dice-scale-factor));
   width: calc(var(--board-tile-size) * var(--dice-scale-factor));
-  border-radius: calc(var(--board-tile-size) * 0.18);
-  padding: calc(var(--board-tile-size) * 0.17);
+  border-radius: calc(var(--board-tile-size) * 0.22);
+  padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -81,10 +81,32 @@
   display: flex;
   align-items: center;
   gap: calc(var(--board-tile-size) * 0.22);
-  padding: 0 var(--player-name-padding);
+  padding: calc(var(--board-tile-size) * 0.16) var(--player-name-padding);
   /* Fixed box so two labels sharing a board edge (3- and 4-player) never grow
      into each other; the photo lives inside this box, not beside it. */
   width: calc(var(--board-tile-size) * var(--player-label-width, 5.5));
+  /* Glossy colored panel (readable on the dark brown table) */
+  border-radius: calc(var(--board-tile-size) * 0.35);
+  color: #fff;
+  box-shadow:
+    0 calc(var(--board-tile-size) * 0.06) calc(var(--board-tile-size) * 0.16) rgba(0, 0, 0, 0.4),
+    inset 0 calc(var(--board-tile-size) * 0.04) calc(var(--board-tile-size) * 0.06) rgba(255, 255, 255, 0.4),
+    inset 0 calc(var(--board-tile-size) * -0.05) calc(var(--board-tile-size) * 0.08) rgba(0, 0, 0, 0.25);
+}
+
+.blue .player-label {
+  background: linear-gradient(160deg, #5cbcf5 0%, #1295e7 55%, #0b6aa8 100%);
+}
+.red .player-label {
+  background: linear-gradient(160deg, #ff6062 0%, #ff0002 55%, #b30002 100%);
+}
+.green .player-label {
+  background: linear-gradient(160deg, #3cc47e 0%, #049645 55%, #036c31 100%);
+}
+.yellow .player-label {
+  background: linear-gradient(160deg, #ffed8a 0%, #ffde15 55%, #d9b800 100%);
+  color: #5a4a00;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 /* When two labels share the top or bottom edge, tighten each so the photo +
@@ -127,7 +149,8 @@
   display: flex;
   gap: calc(var(--board-tile-size) * 0.4);
   font-size: calc(var(--board-tile-size) * 0.36);
-  color: #333;
+  color: inherit;
+  opacity: 0.92;
   cursor: default;
 }
 
