@@ -1,6 +1,13 @@
-// Self-contained sound module: preloads short buffers, unlocks the Web Audio
-// context on the first user gesture (required by iOS autoplay policy), and
-// plays six game events while respecting a persisted mute/volume setting.
+// Self-contained sound module. Playback goes through HTMLAudioElements (one per
+// event) rather than the Web Audio API: on iOS/iPadOS, Web Audio output obeys
+// the hardware ring/mute switch, but <audio>/<video> media playback ignores it —
+// so routing the effects through media elements is what makes them audible on
+// iPad with the switch set to silent. Elements are "unlocked" on the first user
+// gesture (iOS autoplay policy) and playback respects a persisted mute/volume.
+//
+// iOS caveat: media-element .volume is read-only there (hardware-controlled), so
+// the in-app volume slider only scales effect loudness on desktop; on iOS the
+// effects play at system volume. Muting still fully silences them everywhere.
 
 import { logError } from '../../utils/logError';
 
@@ -33,41 +40,9 @@ let muted = false;
 let volume = DEFAULT_VOLUME;
 let settingsLoaded = false;
 
-let audioCtx: AudioContext | null = null;
-const buffers: Partial<Record<SoundName, AudioBuffer>> = {};
+const elements: Partial<Record<SoundName, HTMLAudioElement>> = {};
+let unlocked = false;
 let unlocking: Promise<void> | null = null;
-
-// ~0.2s of silence (8kHz 8-bit mono). Looping this through a plain <audio>
-// element during a user gesture flips iOS off the "ambient" audio session
-// category — the one the hardware mute/ring switch silences — so Web Audio
-// sound effects play even when the iPad's side switch is set to silent.
-// Regenerate: node -e '... writes 0x80 samples ...' (see notes in repo history).
-const SILENT_WAV =
-  'data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
-let mediaPrimer: HTMLAudioElement | null = null;
-
-/**
- * Plays a looping silent clip through a plain HTMLAudioElement to unstick iOS
- * from the mute-switch-silenced audio category. Must run inside a user gesture;
- * failures are swallowed (non-iOS platforms simply don't need it).
- */
-function primeMediaSession(): void {
-  if (typeof Audio === 'undefined') return;
-  try {
-    if (!mediaPrimer) {
-      mediaPrimer = new Audio(SILENT_WAV);
-      mediaPrimer.loop = true;
-      // Keep inline so iOS never pops a fullscreen player; the content is
-      // silence, so volume is irrelevant to what the user hears.
-      mediaPrimer.setAttribute('playsinline', '');
-      mediaPrimer.setAttribute('webkit-playsinline', '');
-    }
-    // play() returns undefined on very old browsers; optional-chain the catch.
-    void mediaPrimer.play()?.catch(() => {});
-  } catch {
-    // Ignore: this is a best-effort enhancement, not required for playback.
-  }
-}
 
 const listeners = new Set<() => void>();
 let snapshot: Snapshot = { muted, volume };
@@ -75,6 +50,10 @@ const serverSnapshot: Snapshot = { muted: false, volume: DEFAULT_VOLUME };
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined';
+}
+
+function hasAudioElement(): boolean {
+  return typeof Audio !== 'undefined';
 }
 
 function emit(): void {
@@ -143,43 +122,53 @@ export function getServerSnapshot(): Snapshot {
 
 /** True only when a real, playable sound is available and not muted. */
 export function canPlay(name: SoundName): boolean {
-  return !muted && audioCtx !== null && buffers[name] !== undefined;
+  return !muted && unlocked && elements[name] !== undefined;
 }
 
 /**
- * Unlocks/creates the audio context inside a user gesture and preloads all
- * buffers. Idempotent and safe to call repeatedly. On unsupported platforms or
- * SSR it resolves without doing anything.
+ * Creates one HTMLAudioElement per sound and "unlocks" each inside a user
+ * gesture: a muted play()/pause() marks the element user-activated on iOS, so
+ * later unmuted plays work and route through the media pathway (which ignores
+ * the mute switch). Idempotent; a no-op during SSR or where Audio is missing.
  */
 export function unlockAudio(): Promise<void> {
-  if (!isBrowser()) return Promise.resolve();
+  if (!isBrowser() || !hasAudioElement()) return Promise.resolve();
   if (unlocking) return unlocking;
 
   unlocking = (async () => {
     try {
-      // Runs before the first await, so this .play() stays inside the gesture.
-      primeMediaSession();
-      const Ctor =
-        window.AudioContext ??
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctor) return;
-      if (!audioCtx) audioCtx = new Ctor();
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
-
+      const names = Object.keys(SOUND_FILES) as SoundName[];
+      // Kick off every element's gesture-unlock synchronously (before the first
+      // await), so each play() call stays inside the triggering user gesture.
       await Promise.all(
-        (Object.keys(SOUND_FILES) as SoundName[]).map(async (name) => {
-          if (buffers[name]) return;
-          const res = await fetch(SOUND_FILES[name]);
-          const arrayBuffer = await res.arrayBuffer();
-          buffers[name] = await audioCtx!.decodeAudioData(arrayBuffer);
+        names.map(async (name) => {
+          let el = elements[name];
+          if (!el) {
+            el = new Audio(SOUND_FILES[name]);
+            el.preload = 'auto';
+            el.setAttribute('playsinline', '');
+            el.setAttribute('webkit-playsinline', '');
+            elements[name] = el;
+          }
+          // Muted so the unlock is inaudible (iOS ignores .volume but honours
+          // .muted); flipped back off once activated.
+          el.muted = true;
+          try {
+            await el.play();
+            el.pause();
+            el.currentTime = 0;
+          } catch {
+            // Element stays usable; a later gesture or direct play can retry.
+          } finally {
+            el.muted = false;
+          }
         })
       );
+      unlocked = true;
     } catch (e) {
       logError('sound.unlockAudio')(e);
-      // Reset so a later gesture retries fetch/decode. Without this, a single
-      // transient failure (e.g. a cold PWA before the service worker caches
-      // /sounds/*) would cache a failed attempt and silence sound all session.
-      // Successfully decoded buffers are already cached and are not re-fetched.
+      // Reset so a later gesture retries. Successfully created elements are
+      // cached and simply re-unlocked.
       unlocking = null;
     }
   })();
@@ -189,16 +178,14 @@ export function unlockAudio(): Promise<void> {
 
 /** Plays a sound. A no-op when muted, during SSR, or before audio is unlocked. */
 export function playSound(name: SoundName): void {
-  if (muted || !isBrowser() || !audioCtx) return;
-  const buffer = buffers[name];
-  if (!buffer) return;
+  if (muted || !isBrowser()) return;
+  const el = elements[name];
+  if (!el) return;
   try {
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    const gain = audioCtx.createGain();
-    gain.gain.value = volume;
-    source.connect(gain).connect(audioCtx.destination);
-    source.start(0);
+    el.muted = false;
+    el.volume = clampVolume(volume); // honoured on desktop; ignored on iOS
+    el.currentTime = 0;
+    void el.play()?.catch(() => {});
   } catch (e) {
     logError('sound.playSound')(e);
   }
@@ -209,9 +196,8 @@ export function __resetSoundManagerForTests(): void {
   muted = false;
   volume = DEFAULT_VOLUME;
   settingsLoaded = false;
-  audioCtx = null;
+  unlocked = false;
   unlocking = null;
-  mediaPrimer = null;
-  for (const k of Object.keys(buffers) as SoundName[]) delete buffers[k];
+  for (const k of Object.keys(elements) as SoundName[]) delete elements[k];
   snapshot = { muted, volume };
 }
