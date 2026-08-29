@@ -30,37 +30,33 @@
   }
 }
 
-/* Whose-turn cue: an animated ring around the active player's movable tokens.
-   Colour-independent (neutral dark outline + white glow) so it stays clearly
-   visible on all four player colours and on light tiles — far more prominent
-   than the old subtle bounce. */
+/* Whose-turn cue: a thick circular ring sitting under the active player's
+   movable tokens (like a base halo), with the pawn bouncing above it so the
+   player sees whose turn it is and which tokens can move. Colour-independent
+   (neutral dark ring + white glow) so it reads on all four colours and on
+   light tiles. */
 .bouncer.active::before {
   content: '';
   position: absolute;
-  inset: -16%;
+  bottom: -8%;
+  left: 50%;
+  width: 84%;
+  aspect-ratio: 1;
   border-radius: 50%;
-  border: 2.5px dashed rgba(20, 20, 20, 0.85);
+  border: 4px solid rgba(20, 20, 20, 0.9);
   box-shadow:
-    0 0 5px 1px rgba(255, 255, 255, 0.95),
-    inset 0 0 5px 1px rgba(255, 255, 255, 0.9);
-  /* transform-only animation — compositor-friendly, no per-frame repaint. */
-  animation: ring-spin 3s linear infinite;
+    0 0 6px 1px rgba(255, 255, 255, 0.95),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.85);
+  /* Behind the pawn so it reads as a base the pawn hops off of. */
+  z-index: 1;
   pointer-events: none;
-  z-index: 2;
+  /* Gentle pulse — transform + opacity only, cheap to paint on iPad. */
+  animation: ring-pulse 1.4s ease-in-out infinite;
+  transform: translateX(-50%) translateZ(0);
 }
 
-/* Expanding, fading ring behind the dashed one adds a pulse of prominence.
-   Animates transform + opacity only (not box-shadow) so it stays cheap on
-   lower-power hardware such as the iPad. */
-.bouncer.active::after {
-  content: '';
-  position: absolute;
-  inset: -16%;
-  border-radius: 50%;
-  border: 2px solid rgba(20, 20, 20, 0.55);
-  animation: ring-pulse 1.5s ease-out infinite;
-  pointer-events: none;
-  z-index: 1;
+.bouncer.active .svg {
+  animation: pawn-bounce 0.7s ease-in-out infinite;
 }
 
 .svg {
@@ -72,31 +68,35 @@
   transform: translate3d(0, 0, 0);
 }
 
-@keyframes ring-spin {
-  to {
-    transform: rotate(360deg);
+@keyframes ring-pulse {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.08);
+    opacity: 1;
   }
 }
 
-@keyframes ring-pulse {
-  0% {
-    transform: scale(0.82);
-    opacity: 0.6;
-  }
+@keyframes pawn-bounce {
+  0%,
   100% {
-    transform: scale(1.25);
-    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -18%, 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bouncer.active::before,
-  .bouncer.active::after {
+  .bouncer.active::before {
     animation: none;
+    opacity: 0.85;
   }
-  /* Keep a calm, static double ring instead of a moving one. */
-  .bouncer.active::after {
-    opacity: 0.5;
+  .bouncer.active .svg {
+    animation: none;
   }
 }
 
