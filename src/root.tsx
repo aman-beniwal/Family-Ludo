@@ -12,23 +12,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const schemaData = {
     '@context': 'https://schema.org',
     '@type': ['VideoGame', 'WebApplication'],
-    name: 'LibreLudo',
-    url: 'https://libreludo.org/',
+    name: 'Family Ludo',
     description:
-      'Play Ludo free in your browser. Ad-free, open-source, with local multiplayer and bot opponents. No downloads, no logins, no tracking.',
+      'Play Ludo together on one device. Local multiplayer and bot opponents, offline and private.',
     playMode: ['MultiPlayer', 'SinglePlayer'],
     genre: ['Board Game', 'Local Multiplayer', 'Casual Game'],
     applicationCategory: 'Game',
     inLanguage: 'en',
     operatingSystem: 'Any',
     isAccessibleForFree: true,
-    sameAs: 'https://github.com/priyanshurav/libreludo',
-    license: 'https://www.gnu.org/licenses/agpl-3.0.html',
-    author: {
-      '@type': 'Person',
-      name: 'Priyanshu Rav',
-      url: 'https://github.com/priyanshurav',
-    },
   };
 
   return (
@@ -37,15 +29,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <link rel="canonical" href="https://libreludo.org/" />
         <meta
           name="description"
-          content="Play Ludo free in your browser. Ad-free, open-source, with local multiplayer and bot opponents. No downloads, no logins, no tracking."
+          content="Play Ludo together on one device. Local multiplayer and bot opponents, offline and private."
         />
 
-        <meta name="theme-color" content="#7C5FFF" />
-        <meta name="apple-mobile-web-app-title" content="LibreLudo" />
-        <meta property="og:site_name" content="LibreLudo" />
+        <meta name="theme-color" content="#ef7d3a" />
+        <meta name="apple-mobile-web-app-title" content="Family Ludo" />
+        <meta property="og:site_name" content="Family Ludo" />
 
         <link
           rel="icon"
