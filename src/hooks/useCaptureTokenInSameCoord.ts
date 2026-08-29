@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useStore } from 'react-redux';
 import {
   deactivateAllTokens,
   lockToken,
@@ -17,9 +17,12 @@ import { tokenMotionRegistry } from '../game/movement/tokenMotionRegistry';
 import { sleep } from '../utils/sleep';
 import { playSound } from '../game/sound/soundManager';
 import { vibrate } from '../utils/haptics';
+import { saveState } from '../game/storage/saveState';
+import type { RootState } from '../state/store';
 
 export function useCaptureTokenInSameCoord() {
   const dispatch = useDispatch();
+  const store = useStore<RootState>();
   const getPosition = useCoordsToPosition();
 
   return useCallback(
@@ -74,12 +77,19 @@ export function useCaptureTokenInSameCoord() {
         animationPromises.push(animateToken());
         if (i < captureData.length - 1) await sleep(250);
       }
-      if (animationPromises.length !== 0) await Promise.all(animationPromises);
-      dispatch(setIsAnyTokenMoving(false));
-      // No save here: the caller persists the final state after the capture
-      // (executeTokenMove for humans, the follow-up rollDice for bots), by
-      // which point recordCapture's kill/death counts are already in the store.
+      try {
+        if (animationPromises.length !== 0) await Promise.all(animationPromises);
+      } finally {
+        // Always unlock and persist, even if an animation was interrupted (the
+        // rejection still propagates to the caller afterward). recordCapture
+        // already ran above, so this is the reliable point at which the new
+        // kill/death counts reach disk — callers save on the happy path but not
+        // on every branch (a bonus-turn group move waits for the next roll, an
+        // interrupted animation rejects into a log-only catch).
+        dispatch(setIsAnyTokenMoving(false));
+        if (captureData.length > 0) saveState(store.getState());
+      }
     },
-    [dispatch, getPosition]
+    [dispatch, getPosition, store]
   );
 }
