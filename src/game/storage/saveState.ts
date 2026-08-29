@@ -36,6 +36,8 @@ export const saveState = (currentState: RootState): void => {
       playerFinishTime: p.playerFinishTime,
       tokens: tokensToBeStored,
       profileId: p.profileId,
+      kills: p.kills,
+      deaths: p.deaths,
     };
 
     toBeStored.players.push(playerToBeStored);

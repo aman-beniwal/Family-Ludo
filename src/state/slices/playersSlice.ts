@@ -66,7 +66,22 @@ const reducers = {
       numberOfConsecutiveSix: 0,
       playerFinishTime: -1,
       profileId: action.payload.profileId ?? null,
+      kills: 0,
+      deaths: 0,
     });
+  },
+
+  // Records a capture for the panel counters: the capturer's kills go up by the
+  // number of tokens captured, and each captured token's owner's deaths go up.
+  recordCapture: (
+    state: TPlayerState,
+    action: PayloadAction<{ capturer: TPlayerColour; captured: TPlayerColour[] }>
+  ) => {
+    if (action.payload.captured.length === 0) return;
+    getPlayer(state, action.payload.capturer).kills += action.payload.captured.length;
+    for (const colour of action.payload.captured) {
+      getPlayer(state, colour).deaths += 1;
+    }
   },
 
   updateTokenCoordinatesAndDirection: (
@@ -196,6 +211,7 @@ const playersSlice = createSlice({
 
 export const {
   registerNewPlayer,
+  recordCapture,
   updateTokenCoordinatesAndDirection,
   setPlayerSequence,
   changeTurn,

@@ -26,6 +26,13 @@ const playerSchema = z.object({
   tokens: tokenSchema.array().length(4),
   // Added in SAVE_VERSION 2 so a resumed game shows the same profile photo/name.
   profileId: z.string().nullable(),
+  // Capture counters. Optional-with-default so saves written before these
+  // fields existed still validate and load (backfilling 0) instead of being
+  // discarded — the loader does a single strict parse with no migration step,
+  // and SAVE_VERSION is intentionally NOT bumped (the "load last game" gate
+  // rejects any version mismatch, which would drop in-progress games).
+  kills: z.number().default(0),
+  deaths: z.number().default(0),
 });
 
 export const schema = z.object({

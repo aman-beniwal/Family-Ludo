@@ -10,6 +10,8 @@ export const DUMMY_PLAYERS: TPlayer[] = [
     tokens: genLockedTokens('blue'),
     playerFinishTime: -1,
     profileId: null,
+    kills: 0,
+    deaths: 0,
   },
   {
     colour: 'red',
@@ -19,6 +21,8 @@ export const DUMMY_PLAYERS: TPlayer[] = [
     tokens: genLockedTokens('red'),
     playerFinishTime: -1,
     profileId: null,
+    kills: 0,
+    deaths: 0,
   },
   {
     colour: 'green',
@@ -28,6 +32,8 @@ export const DUMMY_PLAYERS: TPlayer[] = [
     tokens: genLockedTokens('green'),
     playerFinishTime: -1,
     profileId: null,
+    kills: 0,
+    deaths: 0,
   },
   {
     colour: 'yellow',
@@ -37,5 +43,7 @@ export const DUMMY_PLAYERS: TPlayer[] = [
     tokens: genLockedTokens('yellow'),
     playerFinishTime: -1,
     profileId: null,
+    kills: 0,
+    deaths: 0,
   },
 ];

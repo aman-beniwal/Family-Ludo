@@ -1,7 +1,8 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useStore } from 'react-redux';
 import {
   deactivateAllTokens,
   lockToken,
+  recordCapture,
   setIsAnyTokenMoving,
   setTokenAlignmentData,
 } from '../state/slices/playersSlice';
@@ -16,9 +17,12 @@ import { tokenMotionRegistry } from '../game/movement/tokenMotionRegistry';
 import { sleep } from '../utils/sleep';
 import { playSound } from '../game/sound/soundManager';
 import { vibrate } from '../utils/haptics';
+import { saveState } from '../game/storage/saveState';
+import type { RootState } from '../state/store';
 
 export function useCaptureTokenInSameCoord() {
   const dispatch = useDispatch();
+  const store = useStore<RootState>();
   const getPosition = useCoordsToPosition();
 
   return useCallback(
@@ -33,6 +37,14 @@ export function useCaptureTokenInSameCoord() {
       if (captureData.length > 0) {
         playSound('capture');
         vibrate([0, 40, 30, 40]);
+        // Tally the capture for the panel counters (R12/R13): capturer's kills
+        // and each captured token owner's deaths.
+        dispatch(
+          recordCapture({
+            capturer: capturingToken.colour,
+            captured: captureData.map((cd) => cd.token.colour),
+          })
+        );
       }
       dispatch(
         setTokenAlignmentData({
@@ -67,7 +79,10 @@ export function useCaptureTokenInSameCoord() {
       }
       if (animationPromises.length !== 0) await Promise.all(animationPromises);
       dispatch(setIsAnyTokenMoving(false));
+      // Persist after the movement lock clears so the updated kill/death counts
+      // (and the captured tokens' locked positions) survive an immediate reload.
+      if (captureData.length > 0) saveState(store.getState());
     },
-    [dispatch, getPosition]
+    [dispatch, getPosition, store]
   );
 }

@@ -13,6 +13,10 @@ export type TPlayer = {
   isBot: boolean;
   numberOfConsecutiveSix: number;
   playerFinishTime: number;
+  // Capture stats shown in the player panels: kills = opponent tokens this
+  // player captured; deaths = this player's tokens captured by others.
+  kills: number;
+  deaths: number;
   tokens: TToken[];
   // Links a human seat to its on-device profile so the photo can be resolved
   // from IndexedDB (null for bots or when no profile is linked). Photos are not

@@ -58,3 +58,26 @@ describe('save schema (v2 profileId)', () => {
     expect(res.success).toBe(false);
   });
 });
+
+describe('save schema (capture counters)', () => {
+  it('loads a pre-existing save without kills/deaths and backfills 0', () => {
+    // A save written before the counters existed must still load (not be
+    // discarded) — kills/deaths are optional-with-default.
+    const older = storedPlayer();
+    delete (older as Record<string, unknown>).kills;
+    delete (older as Record<string, unknown>).deaths;
+    const res = validateStoredState(storedSave([older, storedPlayer({ colour: 'red' })]));
+    expect(res.success).toBe(true);
+    expect(res.data?.players[0].kills).toBe(0);
+    expect(res.data?.players[0].deaths).toBe(0);
+  });
+
+  it('preserves stored kills/deaths', () => {
+    const res = validateStoredState(
+      storedSave([storedPlayer({ kills: 3, deaths: 1 }), storedPlayer({ colour: 'red' })])
+    );
+    expect(res.success).toBe(true);
+    expect(res.data?.players[0].kills).toBe(3);
+    expect(res.data?.players[0].deaths).toBe(1);
+  });
+});

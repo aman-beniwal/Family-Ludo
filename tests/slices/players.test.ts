@@ -11,6 +11,7 @@ import playersReducer, {
   initialState,
   lockToken,
   markTokenAsReachedHome,
+  recordCapture,
   registerNewPlayer,
   resetNumberOfConsecutiveSix,
   setIsAnyTokenMoving,
@@ -451,6 +452,29 @@ describe('Test players helpers', () => {
       const initState = structuredClone(initialState);
       initState.players = structuredClone(DUMMY_PLAYERS);
       expect(() => getToken(initState, 'white' as never, 0)).toThrowError();
+    });
+  });
+
+  describe('recordCapture', () => {
+    it("adds to the capturer's kills and each victim's deaths", () => {
+      const initState = structuredClone(initialState);
+      initState.players = structuredClone(DUMMY_PLAYERS);
+      const newState = playersReducer(
+        initState,
+        recordCapture({ capturer: 'blue', captured: ['red', 'green'] })
+      );
+      expect(getPlayer(newState, 'blue').kills).toBe(2);
+      expect(getPlayer(newState, 'red').deaths).toBe(1);
+      expect(getPlayer(newState, 'green').deaths).toBe(1);
+      expect(getPlayer(newState, 'blue').deaths).toBe(0);
+      expect(getPlayer(newState, 'yellow').kills).toBe(0);
+    });
+
+    it('is a no-op when nothing was captured', () => {
+      const initState = structuredClone(initialState);
+      initState.players = structuredClone(DUMMY_PLAYERS);
+      const newState = playersReducer(initState, recordCapture({ capturer: 'blue', captured: [] }));
+      expect(getPlayer(newState, 'blue').kills).toBe(0);
     });
   });
 });
