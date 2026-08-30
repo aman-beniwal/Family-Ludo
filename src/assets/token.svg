@@ -9,11 +9,11 @@
       <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
       <stop offset="1" stop-color="#000000" stop-opacity="0.28"/>
     </linearGradient>
-    <filter id="tok-shadow" x="-30%" y="-20%" width="160%" height="150%">
-      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.35"/>
-    </filter>
   </defs>
-  <g filter="url(#tok-shadow)">
+  <g>
+    <!-- Cheap static contact shadow (no SVG filter, so it stays smooth while the
+         pawn animates on low-powered devices). -->
+    <ellipse cx="52" cy="150" rx="30" ry="8" fill="#000000" opacity="0.28"/>
     <path
       d="M15,148 C5,146 6,118 9,95 C13,54 26,24 50,24 C74,24 87,54 91,95 C94,118 95,146 85,148 C70,156 30,156 15,148 Z"
       fill="var(--fill-colour)" stroke="#00000055" stroke-width="2.5"/>
