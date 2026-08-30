@@ -14,6 +14,8 @@ export default tseslint.config(
       'node_modules/**',
       'coverage/**',
       'public/**',
+      'ios/**',
+      'android/**',
       '*.config.js',
     ],
   },
