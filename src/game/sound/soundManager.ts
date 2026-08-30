@@ -1,11 +1,13 @@
-// Self-contained sound module: preloads short buffers, unlocks the Web Audio
-// context on the first user gesture (required by iOS autoplay policy), and
-// plays six game events while respecting a persisted mute/volume setting.
+// Self-contained sound module. Playback goes through HTMLAudioElements (one per
+// event) rather than the Web Audio API: on iOS/iPadOS, Web Audio output obeys
+// the hardware ring/mute switch, but <audio>/<video> media playback ignores it —
+// so routing the effects through media elements is what makes them audible on
+// iPad with the switch set to silent. Elements are "unlocked" on the first user
+// gesture (iOS autoplay policy) and playback respects a persisted mute/volume.
 //
-// Web Audio is used for near-instant, low-latency playback (chosen over
-// HTMLAudioElements for snappiness). Trade-off on iOS/iPadOS: Web Audio output
-// obeys the hardware ring/mute switch, so effects are silent while the device is
-// in silent mode. That's an accepted trade for zero lag.
+// iOS caveat: media-element .volume is read-only there (hardware-controlled), so
+// the in-app volume slider only scales effect loudness on desktop; on iOS the
+// effects play at system volume. Muting still fully silences them everywhere.
 
 import { logError } from '../../utils/logError';
 
@@ -38,8 +40,13 @@ let muted = false;
 let volume = DEFAULT_VOLUME;
 let settingsLoaded = false;
 
-let audioCtx: AudioContext | null = null;
-const buffers: Partial<Record<SoundName, AudioBuffer>> = {};
+// A small pool of pre-warmed players per sound. Pooling means a rapid retrigger
+// (or two effects at once) grabs a ready element instead of seeking one that's
+// mid-play, which is the main source of audible lag on iOS media elements.
+const POOL_SIZE = 3;
+const pools: Partial<Record<SoundName, HTMLAudioElement[]>> = {};
+const poolIdx: Partial<Record<SoundName, number>> = {};
+let unlocked = false;
 let unlocking: Promise<void> | null = null;
 
 const listeners = new Set<() => void>();
@@ -48,6 +55,10 @@ const serverSnapshot: Snapshot = { muted: false, volume: DEFAULT_VOLUME };
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined';
+}
+
+function hasAudioElement(): boolean {
+  return typeof Audio !== 'undefined';
 }
 
 function emit(): void {
@@ -116,41 +127,75 @@ export function getServerSnapshot(): Snapshot {
 
 /** True only when a real, playable sound is available and not muted. */
 export function canPlay(name: SoundName): boolean {
-  return !muted && audioCtx !== null && buffers[name] !== undefined;
+  return !muted && unlocked && (pools[name]?.length ?? 0) > 0;
 }
 
 /**
- * Unlocks/creates the audio context inside a user gesture and preloads all
- * buffers. Idempotent and safe to call repeatedly. On unsupported platforms or
- * SSR it resolves without doing anything.
+ * Creates one HTMLAudioElement per sound and "unlocks" each inside a user
+ * gesture: a muted play()/pause() marks the element user-activated on iOS, so
+ * later unmuted plays work and route through the media pathway (which ignores
+ * the mute switch). Idempotent; a no-op during SSR or where Audio is missing.
  */
 export function unlockAudio(): Promise<void> {
-  if (!isBrowser()) return Promise.resolve();
+  if (!isBrowser() || !hasAudioElement()) return Promise.resolve();
   if (unlocking) return unlocking;
 
   unlocking = (async () => {
     try {
-      const Ctor =
-        window.AudioContext ??
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctor) return;
-      if (!audioCtx) audioCtx = new Ctor();
-      if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-      await Promise.all(
-        (Object.keys(SOUND_FILES) as SoundName[]).map(async (name) => {
-          if (buffers[name]) return;
-          const res = await fetch(SOUND_FILES[name]);
-          const arrayBuffer = await res.arrayBuffer();
-          buffers[name] = await audioCtx!.decodeAudioData(arrayBuffer);
-        })
-      );
+      const names = Object.keys(SOUND_FILES) as SoundName[];
+      const jobs: Promise<void>[] = [];
+      // Build pools and kick off each element's gesture-unlock synchronously
+      // (before the first await) so every play() stays inside the user gesture.
+      for (const name of names) {
+        let pool = pools[name];
+        if (!pool) {
+          pool = [];
+          for (let i = 0; i < POOL_SIZE; i++) {
+            const el = new Audio(SOUND_FILES[name]);
+            el.preload = 'auto';
+            el.setAttribute('playsinline', '');
+            el.setAttribute('webkit-playsinline', '');
+            // Rewind when finished so the next play starts instantly with no
+            // seek on the hot path.
+            el.addEventListener('ended', () => {
+              try {
+                el.currentTime = 0;
+              } catch {
+                /* ignore */
+              }
+            });
+            pool.push(el);
+          }
+          pools[name] = pool;
+          poolIdx[name] = 0;
+        }
+        for (const el of pool) {
+          // Muted so the unlock/pre-warm is inaudible (iOS ignores .volume but
+          // honours .muted); flipped back off once activated. Playing through
+          // also forces a decode so the first real play isn't a cold start.
+          el.muted = true;
+          jobs.push(
+            el
+              .play()
+              .then(() => {
+                el.pause();
+                el.currentTime = 0;
+              })
+              .catch(() => {
+                // Element stays usable; a later gesture or direct play retries.
+              })
+              .finally(() => {
+                el.muted = false;
+              })
+          );
+        }
+      }
+      await Promise.all(jobs);
+      unlocked = true;
     } catch (e) {
       logError('sound.unlockAudio')(e);
-      // Reset so a later gesture retries fetch/decode. Without this, a single
-      // transient failure (e.g. a cold PWA before the service worker caches
-      // /sounds/*) would cache a failed attempt and silence sound all session.
-      // Successfully decoded buffers are already cached and are not re-fetched.
+      // Reset so a later gesture retries. Successfully created elements are
+      // cached and simply re-unlocked.
       unlocking = null;
     }
   })();
@@ -160,16 +205,21 @@ export function unlockAudio(): Promise<void> {
 
 /** Plays a sound. A no-op when muted, during SSR, or before audio is unlocked. */
 export function playSound(name: SoundName): void {
-  if (muted || !isBrowser() || !audioCtx) return;
-  const buffer = buffers[name];
-  if (!buffer) return;
+  if (muted || !isBrowser()) return;
+  const pool = pools[name];
+  if (!pool || pool.length === 0) return;
   try {
-    const source = audioCtx.createBufferSource();
-    source.buffer = buffer;
-    const gain = audioCtx.createGain();
-    gain.gain.value = volume;
-    source.connect(gain).connect(audioCtx.destination);
-    source.start(0);
+    // Prefer an idle element so we never interrupt (and re-seek) a playing one;
+    // fall back to round-robin when every element is busy.
+    const idx = poolIdx[name] ?? 0;
+    const idle = pool.find((e) => e.paused || e.ended);
+    const el = idle ?? pool[idx];
+    poolIdx[name] = (idx + 1) % pool.length;
+
+    el.muted = false;
+    el.volume = clampVolume(volume); // honoured on desktop; ignored on iOS
+    if (el.currentTime !== 0) el.currentTime = 0;
+    void el.play()?.catch(() => {});
   } catch (e) {
     logError('sound.playSound')(e);
   }
@@ -180,8 +230,11 @@ export function __resetSoundManagerForTests(): void {
   muted = false;
   volume = DEFAULT_VOLUME;
   settingsLoaded = false;
-  audioCtx = null;
+  unlocked = false;
   unlocking = null;
-  for (const k of Object.keys(buffers) as SoundName[]) delete buffers[k];
+  for (const k of Object.keys(pools) as SoundName[]) {
+    delete pools[k];
+    delete poolIdx[k];
+  }
   snapshot = { muted, volume };
 }
