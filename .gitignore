@@ -33,3 +33,7 @@ dist-ssr
 # Claude Code local dev config
 .claude/
 .style-backup/
+
+# Capacitor native (regenerated via `npx cap add ios`)
+/ios/
+/android/

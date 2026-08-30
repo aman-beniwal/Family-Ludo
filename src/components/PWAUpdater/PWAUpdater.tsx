@@ -4,6 +4,9 @@ import { logError } from '../../utils/logError';
 
 export const PWAUpdater = () => {
   useEffect(() => {
+    // The native (Capacitor) app bundles all assets and has no service worker,
+    // so skip registration there entirely.
+    if (__NATIVE__) return;
     const updateSW = registerSW({
       onNeedRefresh() {
         const shouldUpdate = window.confirm('A new version of Family Ludo is available. Update now?');

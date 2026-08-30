@@ -2,9 +2,14 @@ import type { VitePWAOptions } from 'vite-plugin-pwa';
 
 // Must match Vite `base`. The manifest/scope/fallback are absolute URLs, so they
 // carry the subpath explicitly; change this alongside `base` for a root deploy.
-const BASE = '/Family-Ludo/';
+// NATIVE=1 (Capacitor iOS app) serves from the bundle root.
+const BASE = process.env.NATIVE === '1' ? '/' : '/Family-Ludo/';
 
 export const pwaOptions: Partial<VitePWAOptions> = {
+  // No service worker in the native app: assets are bundled and the capacitor://
+  // scheme breaks SW registration. `disable` keeps the virtual:pwa-register
+  // import a no-op so PWAUpdater still builds. (Web build keeps the SW.)
+  disable: process.env.NATIVE === '1',
   outDir: 'build/client',
   registerType: 'prompt',
   filename: 'sw.js',
