@@ -9,6 +9,7 @@
 // the in-app volume slider only scales effect loudness on desktop; on iOS the
 // effects play at system volume. Muting still fully silences them everywhere.
 
+import type { NativeAudio as NativeAudioType } from '@capacitor-community/native-audio';
 import { logError } from '../../utils/logError';
 
 export type SoundName = 'diceRoll' | 'move' | 'capture' | 'home' | 'turn' | 'win';
@@ -48,6 +49,15 @@ const pools: Partial<Record<SoundName, HTMLAudioElement[]>> = {};
 const poolIdx: Partial<Record<SoundName, number>> = {};
 let unlocked = false;
 let unlocking: Promise<void> | null = null;
+
+// In the native iOS app, play through the native audio engine (AVFoundation via
+// @capacitor-community/native-audio): far lower latency than an <audio> element
+// in the WKWebView, which is what caused the on-device sound lag. Falls back to
+// the HTMLAudio pool if native preload fails. Always false on web.
+let useNativeAudio = __NATIVE__;
+// Loaded lazily (dynamic import) only in the native app, so the plugin never
+// enters the web bundle or the test environment.
+let nativeAudio: typeof NativeAudioType | null = null;
 
 const listeners = new Set<() => void>();
 let snapshot: Snapshot = { muted, volume };
@@ -127,7 +137,8 @@ export function getServerSnapshot(): Snapshot {
 
 /** True only when a real, playable sound is available and not muted. */
 export function canPlay(name: SoundName): boolean {
-  return !muted && unlocked && (pools[name]?.length ?? 0) > 0;
+  if (muted || !unlocked) return false;
+  return useNativeAudio || (pools[name]?.length ?? 0) > 0;
 }
 
 /**
@@ -141,8 +152,34 @@ export function unlockAudio(): Promise<void> {
   if (unlocking) return unlocking;
 
   unlocking = (async () => {
+    const names = Object.keys(SOUND_FILES) as SoundName[];
+
+    // Native app: preload every effect into the native audio engine. assetPath
+    // is relative to the app's bundled `public/` folder (Capacitor copies the
+    // web build there). If any preload fails, fall back to the HTMLAudio pool.
+    if (useNativeAudio) {
+      try {
+        const mod = await import('@capacitor-community/native-audio');
+        nativeAudio = mod.NativeAudio;
+        await Promise.all(
+          names.map((name) =>
+            nativeAudio!.preload({
+              assetId: name,
+              assetPath: `public/sounds/${name}.wav`,
+              audioChannelNum: 1,
+              isUrl: false,
+            })
+          )
+        );
+        unlocked = true;
+        return;
+      } catch (e) {
+        logError('sound.nativePreload')(e);
+        useNativeAudio = false; // fall through to the HTMLAudio path below
+      }
+    }
+
     try {
-      const names = Object.keys(SOUND_FILES) as SoundName[];
       const jobs: Promise<void>[] = [];
       // Build pools and kick off each element's gesture-unlock synchronously
       // (before the first await) so every play() stays inside the user gesture.
@@ -206,6 +243,17 @@ export function unlockAudio(): Promise<void> {
 /** Plays a sound. A no-op when muted, during SSR, or before audio is unlocked. */
 export function playSound(name: SoundName): void {
   if (muted || !isBrowser()) return;
+
+  if (useNativeAudio && nativeAudio) {
+    try {
+      void nativeAudio.setVolume({ assetId: name, volume: clampVolume(volume) }).catch(() => {});
+      void nativeAudio.play({ assetId: name }).catch(() => {});
+    } catch (e) {
+      logError('sound.playSound.native')(e);
+    }
+    return;
+  }
+
   const pool = pools[name];
   if (!pool || pool.length === 0) return;
   try {
@@ -232,6 +280,8 @@ export function __resetSoundManagerForTests(): void {
   settingsLoaded = false;
   unlocked = false;
   unlocking = null;
+  useNativeAudio = __NATIVE__;
+  nativeAudio = null;
   for (const k of Object.keys(pools) as SoundName[]) {
     delete pools[k];
     delete poolIdx[k];
