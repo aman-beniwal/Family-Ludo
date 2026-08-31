@@ -90,7 +90,13 @@ export default function Dice({ colour, playerName, profileId }: Props) {
   //  - avatar frame  (idle / not this player's turn)
   //  - roll button   (this human's turn, before they've rolled)
   //  - dice face     (mid-roll or after rolling, incl. the whole bot turn)
-  const showRollButton = isCurrentPlayer && !isBot && !isPlaceholderShowing && !anyTokenActive;
+  // Keep the rolled number on the die through the auto-move: the pawn is
+  // deactivated the instant it starts moving (anyTokenActive flips false while
+  // isAnyTokenMoving is true), so without the moving check the star button
+  // would flash back mid-move. It only returns to the roll button once the
+  // move settles and it's still this player's turn (e.g. after rolling a six).
+  const showRollButton =
+    isCurrentPlayer && !isBot && !isPlaceholderShowing && !anyTokenActive && !isAnyTokenMoving;
   const showDiceFace = isCurrentPlayer && !showRollButton;
 
   const handleDiceClick = useCallback(async () => {
