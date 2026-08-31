@@ -1,4 +1,4 @@
-import BoardImage from '../../../../assets/board.svg?react';
+import boardImg from '../../../../assets/theme/board.png';
 import Token from '../Token/Token';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../../../state/store';
@@ -60,6 +60,13 @@ export default function Board() {
 
   return (
     <div className={styles.board} ref={setBoardNode} onClick={handleBoardClick}>
+      <img
+        src={boardImg}
+        className={styles.boardImage}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+      />
       {players.map((p) =>
         p.tokens.map((t) => (
           <Token
@@ -81,7 +88,6 @@ export default function Board() {
           />
         );
       })}
-      <BoardImage className={styles.boardImage} aria-hidden="true" />
     </div>
   );
 }

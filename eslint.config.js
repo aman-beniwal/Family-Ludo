@@ -16,6 +16,7 @@ export default tseslint.config(
       'public/**',
       'ios/**',
       'android/**',
+      'design/**',
       '*.config.js',
     ],
   },

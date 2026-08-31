@@ -69,8 +69,8 @@ describe('Test coords/logic', () => {
     it('returns false when token coordinates do not overlap across token paths', () => {
       expect(
         isTokenAhead(
-          { ...DUMMY_TOKEN, colour: 'green', coordinates: { x: 2, y: 6 } },
-          { ...DUMMY_TOKEN, colour: 'red', coordinates: { x: 0, y: 8 } }
+          { ...DUMMY_TOKEN, colour: 'red', coordinates: { x: 2, y: 6 } },
+          { ...DUMMY_TOKEN, colour: 'green', coordinates: { x: 0, y: 8 } }
         )
       ).toBe(false);
     });
@@ -82,8 +82,8 @@ describe('Test coords/logic', () => {
       expect(areTokensOnOverlappingPaths(token1, token2)).toBe(true);
     });
     it('returns false when token1 and token2 do not share any coordinates in their remaining paths', () => {
-      const token1: TToken = { ...DUMMY_TOKEN, colour: 'green', coordinates: { x: 2, y: 6 } };
-      const token2: TToken = { ...DUMMY_TOKEN, colour: 'red', coordinates: { x: 0, y: 8 } };
+      const token1: TToken = { ...DUMMY_TOKEN, colour: 'red', coordinates: { x: 2, y: 6 } };
+      const token2: TToken = { ...DUMMY_TOKEN, colour: 'green', coordinates: { x: 0, y: 8 } };
       expect(areTokensOnOverlappingPaths(token2, token1)).toBe(false);
     });
     it('returns true when token1 and token2 are currently on the same coordinate', () => {
@@ -103,7 +103,7 @@ describe('Test coords/logic', () => {
   });
   describe('isCoordInHomeEntryPathForColour', () => {
     it('returns true when the coordinate is in the home entry path for the given colour', () => {
-      expect(isCoordInHomeEntryPathForColour({ x: 7, y: 12 }, 'blue')).toBe(true);
+      expect(isCoordInHomeEntryPathForColour({ x: 7, y: 12 }, 'yellow')).toBe(true);
     });
     it('returns false when the coordinate is not in the home entry path for the given colour', () => {
       expect(isCoordInHomeEntryPathForColour({ x: 6, y: 12 }, 'blue')).toBe(false);
@@ -125,8 +125,8 @@ describe('Test coords/logic', () => {
       expect(getDistanceBetweenTokens(token2, token1)).toBe(6);
     });
     it('returns -1 when tokens are on separate paths with no shared coordinates', () => {
-      const token1: TToken = { ...DUMMY_TOKEN, colour: 'green', coordinates: { x: 2, y: 6 } };
-      const token2: TToken = { ...DUMMY_TOKEN, colour: 'red', coordinates: { x: 0, y: 8 } };
+      const token1: TToken = { ...DUMMY_TOKEN, colour: 'red', coordinates: { x: 2, y: 6 } };
+      const token2: TToken = { ...DUMMY_TOKEN, colour: 'green', coordinates: { x: 0, y: 8 } };
       expect(getDistanceBetweenTokens(token1, token2)).toBe(-1);
       expect(getDistanceBetweenTokens(token2, token1)).toBe(-1);
     });

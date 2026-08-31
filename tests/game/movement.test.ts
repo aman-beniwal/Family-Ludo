@@ -127,47 +127,47 @@ describe('Test game/movement', () => {
     describe('capturing opponent tokens', () => {
       it('captures a single opponent token occupying the destination tile', () => {
         const state = buildState();
-        const mover = getToken(state.players, 'blue', 0);
+        const mover = getToken(state.players, 'yellow', 0);
         placeOnPath(mover, 2);
-        const enemy = getToken(state.players, 'red', 0);
+        const enemy = getToken(state.players, 'green', 0);
         placeOnPath(enemy, 45);
         enemy.tokenAlignmentData = { xOffset: 0.5, yOffset: -0.5, scaleFactor: 0.75 };
 
         const { nextState, captureData } = calculateSequence(state, mover, 4);
 
         expect(captureData).toHaveLength(1);
-        expect(captureData[0].token.colour).toBe('red');
+        expect(captureData[0].token.colour).toBe('green');
         expect(captureData[0].token.id).toBe(0);
 
-        const capturedInNextState = getToken(nextState.players, 'red', 0);
+        const capturedInNextState = getToken(nextState.players, 'green', 0);
         expect(capturedInNextState.isLocked).toBe(true);
         expect(capturedInNextState.direction).toBe('forward');
-        expect(capturedInNextState.coordinates).toEqual(TOKEN_LOCKED_COORDINATES.red[0]);
+        expect(capturedInNextState.coordinates).toEqual(TOKEN_LOCKED_COORDINATES.green[0]);
         expect(capturedInNextState.tokenAlignmentData).toEqual(defaultTokenAlignmentData);
       });
 
       it('returns the captured token moveSequence as its own path reversed back to its start', () => {
         const state = buildState();
-        const mover = getToken(state.players, 'blue', 0);
+        const mover = getToken(state.players, 'yellow', 0);
         placeOnPath(mover, 2);
-        const enemy = getToken(state.players, 'red', 0);
+        const enemy = getToken(state.players, 'green', 0);
         placeOnPath(enemy, 45);
 
         const { captureData } = calculateSequence(state, mover, 4);
 
-        expect(captureData[0].moveSequence).toEqual(tokenPaths.red.slice(0, 46).reverse());
-        expect(captureData[0].moveSequence[0]).toEqual(tokenPaths.red[45]);
-        expect(captureData[0].moveSequence.at(-1)).toEqual(tokenPaths.red[0]);
+        expect(captureData[0].moveSequence).toEqual(tokenPaths.green.slice(0, 46).reverse());
+        expect(captureData[0].moveSequence[0]).toEqual(tokenPaths.green[45]);
+        expect(captureData[0].moveSequence.at(-1)).toEqual(tokenPaths.green[0]);
       });
 
       it('captures every opponent token on the destination tile, regardless of colour', () => {
         const state = buildState();
-        const mover = getToken(state.players, 'blue', 0);
+        const mover = getToken(state.players, 'yellow', 0);
         placeOnPath(mover, 2);
-        const redEnemy = getToken(state.players, 'red', 0);
-        placeOnPath(redEnemy, 45);
         const greenEnemy = getToken(state.players, 'green', 0);
-        placeOnPath(greenEnemy, 32);
+        placeOnPath(greenEnemy, 45);
+        const redEnemy = getToken(state.players, 'red', 0);
+        placeOnPath(redEnemy, 32);
 
         const { nextState, captureData } = calculateSequence(state, mover, 4);
 
@@ -274,15 +274,15 @@ describe('Test game/movement', () => {
 
       it('grants another turn when a capture occurs, even on a non-six roll', () => {
         const state = buildState();
-        state.players.currentPlayerColour = 'blue';
-        const mover = getToken(state.players, 'blue', 0);
+        state.players.currentPlayerColour = 'yellow';
+        const mover = getToken(state.players, 'yellow', 0);
         placeOnPath(mover, 2);
-        const enemy = getToken(state.players, 'red', 0);
+        const enemy = getToken(state.players, 'green', 0);
         placeOnPath(enemy, 45);
 
         const { nextState } = calculateSequence(state, mover, 4);
 
-        expect(nextState.players.currentPlayerColour).toBe('blue');
+        expect(nextState.players.currentPlayerColour).toBe('yellow');
       });
 
       it('grants another turn when the token reaches home, even on a non-six roll', () => {

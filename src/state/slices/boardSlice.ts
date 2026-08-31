@@ -15,7 +15,8 @@ export const initialState: TBoardState = {
 };
 
 export const NUMBER_OF_BLOCKS_IN_ONE_ROW = 15;
-export const TOKEN_WIDTH_HEIGHT_RATIO = 0.625;
+// Square tokens for the jelly-pawn art (the old teardrop pawn used 0.625).
+export const TOKEN_WIDTH_HEIGHT_RATIO = 1;
 
 const reducers = {
   resizeBoard: (state: TBoardState, action: PayloadAction<number>) => {
