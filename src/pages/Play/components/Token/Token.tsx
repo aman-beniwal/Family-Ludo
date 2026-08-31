@@ -8,10 +8,12 @@ import { type TPlayer, type TPlayerColour, type TTokenClickData } from '../../..
 import { type TToken } from '../../../../types';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../../state/store';
-import TokenImage from '../../../../assets/token.svg?react';
+import pawnBlue from '../../../../assets/theme/pawn-blue.png';
+import pawnRed from '../../../../assets/theme/pawn-red.png';
+import pawnGreen from '../../../../assets/theme/pawn-green.png';
+import pawnYellow from '../../../../assets/theme/pawn-yellow.png';
 import { useCoordsToPosition } from '../../../../hooks/useCoordsToPosition';
 import { useMoveAndCaptureToken } from '../../../../hooks/useMoveAndCaptureToken';
-import { playerColours } from '../../../../game/players/constants';
 import { transitionStates } from '../../../../game/tokens/constants';
 import styles from './Token.module.css';
 import clsx from 'clsx';
@@ -25,6 +27,13 @@ import { logError } from '../../../../utils/logError';
 
 // Matches the capture-flash keyframe duration in Token.module.css.
 const CAPTURE_FLASH_MS = 450;
+
+const PAWN_BY_COLOUR: Record<TPlayerColour, string> = {
+  blue: pawnBlue,
+  red: pawnRed,
+  green: pawnGreen,
+  yellow: pawnYellow,
+};
 
 type Props = {
   colour: TPlayerColour;
@@ -197,14 +206,12 @@ export default function Token({ colour, id, tokenClickData }: Props) {
       }}
     >
       <span className={clsx(styles.bouncer, { [styles.active]: isActive && !isCurrentlyFocused })}>
-        <TokenImage
+        <img
           className={styles.svg}
+          src={PAWN_BY_COLOUR[colour]}
+          alt=""
           aria-hidden="true"
-          style={
-            {
-              '--fill-colour': playerColours[colour],
-            } as React.CSSProperties
-          }
+          draggable={false}
         />
       </span>
     </motion.button>

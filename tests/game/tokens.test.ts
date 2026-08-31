@@ -193,7 +193,7 @@ describe('Test tokens/logic', () => {
   });
   describe('getAvailableSteps', () => {
     it('returns the correct number of available steps for a token at a given coordinate and colour', () => {
-      const token: TToken = { ...DUMMY_TOKEN, colour: 'blue', coordinates: { x: 7, y: 13 } };
+      const token: TToken = { ...DUMMY_TOKEN, colour: 'yellow', coordinates: { x: 7, y: 13 } };
       expect(getAvailableSteps(token)).toBe(5);
     });
     it('returns zero if the token is at a position with no available moves', () => {

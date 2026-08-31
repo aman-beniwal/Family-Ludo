@@ -5,6 +5,12 @@
   align-items: center;
   width: 100vw;
   height: 100vh;
+  background-color: #3a2909;
+  background-image: radial-gradient(circle at 68% 3%, rgba(255, 236, 190, 0.5), transparent 13%),
+    radial-gradient(circle at 62% 9%, rgba(255, 214, 150, 0.25), transparent 24%),
+    radial-gradient(circle at 20% 82%, rgba(255, 214, 150, 0.12), transparent 16%),
+    radial-gradient(circle at 86% 62%, rgba(255, 214, 150, 0.09), transparent 20%),
+    radial-gradient(130% 105% at 50% 20%, #6d4f16 0%, #4a3410 55%, #34240a 100%);
 }
 
 .exit-btn {

@@ -5,10 +5,20 @@
   height: var(--board-side-length);
   width: var(--board-side-length);
 
+  /* The board art (board.png) includes a wooden frame that insets the 15x15
+     play grid by ~18/1200 of the image on each side. Scale the image up and
+     offset it so the play grid lines up exactly with the token coordinate
+     space (0..side), letting the frame overflow slightly outside .board. */
   & .board-image {
-    height: var(--board-side-length);
-    width: var(--board-side-length);
-    background-color: white;
+    position: absolute;
+    width: calc(var(--board-side-length) * 1.0309);
+    height: calc(var(--board-side-length) * 1.0309);
+    top: calc(var(--board-side-length) * -0.01546);
+    left: calc(var(--board-side-length) * -0.01546);
+    max-width: none;
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
   }
 
   @media only screen and (max-width: calc(80vh + 15vw)) {

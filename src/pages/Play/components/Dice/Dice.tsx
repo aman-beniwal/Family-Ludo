@@ -1,9 +1,9 @@
-import dice1 from '../../../../assets/dice/1.svg';
-import dice2 from '../../../../assets/dice/2.svg';
-import dice3 from '../../../../assets/dice/3.svg';
-import dice4 from '../../../../assets/dice/4.svg';
-import dice5 from '../../../../assets/dice/5.svg';
-import dice6 from '../../../../assets/dice/6.svg';
+import dice1 from '../../../../assets/theme/dice-1.png';
+import dice2 from '../../../../assets/theme/dice-2.png';
+import dice3 from '../../../../assets/theme/dice-3.png';
+import dice4 from '../../../../assets/theme/dice-4.png';
+import dice5 from '../../../../assets/theme/dice-5.png';
+import dice6 from '../../../../assets/theme/dice-6.png';
 import dicePlaceholder from '../../../../assets/dice/dice_placeholder.gif';
 import { useCallback, useEffect, useMemo } from 'react';
 import { type TPlayerColour } from '../../../../types';

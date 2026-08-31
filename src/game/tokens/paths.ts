@@ -51,33 +51,22 @@ export const expandedTokenHomeEntryPath = Object.fromEntries(
 
 export const expandedGeneralTokenPath = expandTokenPath(GENERAL_TOKEN_PATH);
 
-function genBlueTokenPath() {
-  const expandedGeneralTokenPathForBlue = expandTokenPath(GENERAL_TOKEN_PATH).slice(0, -1);
-  return [...expandedGeneralTokenPathForBlue, ...expandedTokenHomeEntryPath.blue];
+// GENERAL_TOKEN_PATH starts at the bottom arm (yellow's start). Each colour
+// enters the ring one arm further round: yellow=0, green=3, red=6, blue=9
+// (matches the board.png layout — green TL / red TR / yellow BL / blue BR).
+function genTokenPath(sliceOffset: number, colour: TPlayerColour): TCoordinate[] {
+  const path =
+    sliceOffset === 0
+      ? GENERAL_TOKEN_PATH
+      : [...GENERAL_TOKEN_PATH.slice(sliceOffset), ...GENERAL_TOKEN_PATH.slice(0, sliceOffset)];
+  const expandedRing = expandTokenPath(path).slice(0, -1);
+  return [...expandedRing, ...expandedTokenHomeEntryPath[colour]];
 }
 
-function genRedTokenPath() {
-  const path = [...GENERAL_TOKEN_PATH.slice(3), ...GENERAL_TOKEN_PATH.slice(0, 3)];
-  const expandedTokenPathForRed = expandTokenPath(path).slice(0, -1);
-  return [...expandedTokenPathForRed, ...expandedTokenHomeEntryPath.red];
-}
-
-function genGreenTokenPath() {
-  const path = [...GENERAL_TOKEN_PATH.slice(6), ...GENERAL_TOKEN_PATH.slice(0, 6)];
-  const expandedTokenPathForGreen = expandTokenPath(path).slice(0, -1);
-  return [...expandedTokenPathForGreen, ...expandedTokenHomeEntryPath.green];
-}
-
-function genYellowTokenPath() {
-  const path = [...GENERAL_TOKEN_PATH.slice(9), ...GENERAL_TOKEN_PATH.slice(0, 9)];
-  const expandedTokenPathForYellow = expandTokenPath(path).slice(0, -1);
-  return [...expandedTokenPathForYellow, ...expandedTokenHomeEntryPath.yellow];
-}
-
-const blueTokenPath = genBlueTokenPath();
-const redTokenPath = genRedTokenPath();
-const greenTokenPath = genGreenTokenPath();
-const yellowTokenPath = genYellowTokenPath();
+const yellowTokenPath = genTokenPath(0, 'yellow');
+const greenTokenPath = genTokenPath(3, 'green');
+const redTokenPath = genTokenPath(6, 'red');
+const blueTokenPath = genTokenPath(9, 'blue');
 
 export const tokenPaths: Record<TPlayerColour, TCoordinate[]> = {
   blue: blueTokenPath,
