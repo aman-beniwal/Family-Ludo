@@ -22,6 +22,11 @@ export type TPlayer = {
   // from IndexedDB (null for bots or when no profile is linked). Photos are not
   // stored in Redux/the save — only this id, then looked up at render.
   profileId: string | null;
+  // Anti-frustration counter: consecutive turns this player rolled with every
+  // token still stuck in base (never a 6). After enough such turns the next
+  // roll is forced to a 6 so they finally get a pawn out. Optional so saves
+  // written before it existed still resume, defaulting to 0.
+  turnsStuckInBase?: number;
 };
 
 export type TCoordinate = {
