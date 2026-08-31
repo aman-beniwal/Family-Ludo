@@ -12,6 +12,7 @@ import playersReducer, {
   lockToken,
   markTokenAsReachedHome,
   recordCapture,
+  recordExitRoll,
   registerNewPlayer,
   resetNumberOfConsecutiveSix,
   setIsAnyTokenMoving,
@@ -52,6 +53,47 @@ describe('Test players slice reducers', () => {
       ).toThrowError();
     });
   });
+  describe('recordExitRoll', () => {
+    it('extends the stuck-in-base streak when all tokens are in base and no six', () => {
+      const initState = structuredClone(initialState);
+      initState.players = structuredClone(DUMMY_PLAYERS);
+      getPlayer(initState, 'blue').turnsStuckInBase = 2;
+
+      const newState = playersReducer(
+        initState,
+        recordExitRoll({ colour: 'blue', allInBase: true, rolledSix: false })
+      );
+
+      expect(getPlayer(newState, 'blue').turnsStuckInBase).toBe(3);
+    });
+
+    it('resets the streak when a six is rolled', () => {
+      const initState = structuredClone(initialState);
+      initState.players = structuredClone(DUMMY_PLAYERS);
+      getPlayer(initState, 'blue').turnsStuckInBase = 4;
+
+      const newState = playersReducer(
+        initState,
+        recordExitRoll({ colour: 'blue', allInBase: true, rolledSix: true })
+      );
+
+      expect(getPlayer(newState, 'blue').turnsStuckInBase).toBe(0);
+    });
+
+    it('resets the streak when a pawn is already out', () => {
+      const initState = structuredClone(initialState);
+      initState.players = structuredClone(DUMMY_PLAYERS);
+      getPlayer(initState, 'blue').turnsStuckInBase = 4;
+
+      const newState = playersReducer(
+        initState,
+        recordExitRoll({ colour: 'blue', allInBase: false, rolledSix: false })
+      );
+
+      expect(getPlayer(newState, 'blue').turnsStuckInBase).toBe(0);
+    });
+  });
+
   describe('changeCoordsOfToken', () => {
     it('should update the coordinates of the specified token for the given player colour', () => {
       const initState = structuredClone(initialState);

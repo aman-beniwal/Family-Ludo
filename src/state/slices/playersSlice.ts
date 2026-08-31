@@ -68,7 +68,23 @@ const reducers = {
       profileId: action.payload.profileId ?? null,
       kills: 0,
       deaths: 0,
+      turnsStuckInBase: 0,
     });
+  },
+
+  // Tracks the anti-frustration streak: a turn rolled with every token still in
+  // base and no 6 extends it; anything else (a 6, or a pawn already out) clears
+  // it. useRollDice reads it to force a 6 once the streak gets long enough.
+  recordExitRoll: (
+    state: TPlayerState,
+    action: PayloadAction<{ colour: TPlayerColour; allInBase: boolean; rolledSix: boolean }>
+  ) => {
+    const player = getPlayer(state, action.payload.colour);
+    if (action.payload.allInBase && !action.payload.rolledSix) {
+      player.turnsStuckInBase = (player.turnsStuckInBase ?? 0) + 1;
+    } else {
+      player.turnsStuckInBase = 0;
+    }
   },
 
   // Assigns (or changes) the profile behind a seat mid-game — used when a
@@ -223,6 +239,7 @@ const playersSlice = createSlice({
 export const {
   registerNewPlayer,
   setPlayerProfile,
+  recordExitRoll,
   recordCapture,
   updateTokenCoordinatesAndDirection,
   setPlayerSequence,
