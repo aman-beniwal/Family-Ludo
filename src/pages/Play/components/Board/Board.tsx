@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 import { NUMBER_OF_BLOCKS_IN_ONE_ROW, resizeBoard } from '../../../../state/slices/boardSlice';
 import { ERRORS } from '../../../../utils/errors';
 import Dice from '../Dice/Dice';
+import QuadrantLabel from '../QuadrantLabel/QuadrantLabel';
 import type { TCoordinate } from '../../../../types';
 import { getGloballyUniqueTokenId, tokensWithCoord } from '../../../../game/tokens/logic';
 import type { TTokenClickData } from '../../../../types/tokens';
@@ -67,6 +68,9 @@ export default function Board() {
         aria-hidden="true"
         draggable={false}
       />
+      {players.map((p) => (
+        <QuadrantLabel colour={p.colour} key={`label-${p.colour}`} />
+      ))}
       {players.map((p) =>
         p.tokens.map((t) => (
           <Token

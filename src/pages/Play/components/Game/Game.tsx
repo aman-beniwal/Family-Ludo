@@ -17,7 +17,7 @@ import { useRollDice } from '../../../../hooks/useRollDice';
 import { playerSequences } from '../../../../game/players/constants';
 import { logError } from '../../../../utils/logError';
 import { saveState } from '../../../../game/storage/saveState';
-import { SoundControl } from '../../../../components/SoundControl/SoundControl';
+import BottomBar from '../BottomBar/BottomBar';
 
 export const EXIT_MESSAGE = 'Are you sure you want to exit?';
 
@@ -138,15 +138,7 @@ export default function Game({ initData }: Props) {
       }
     >
       <Board />
-      <SoundControl />
-      <button
-        type="button"
-        aria-label="Exit button"
-        className={styles.exitBtn}
-        onClick={handleExitBtnClick}
-      >
-        &times;
-      </button>
+      <BottomBar onExit={handleExitBtnClick} />
       {isGameEnded && <GameFinishedScreen playerFinishOrder={playerFinishOrder} />}
     </div>
   );

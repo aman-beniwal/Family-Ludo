@@ -5,6 +5,11 @@ import dice4 from '../../../../assets/theme/dice-4.png';
 import dice5 from '../../../../assets/theme/dice-5.png';
 import dice6 from '../../../../assets/theme/dice-6.png';
 import dicePlaceholder from '../../../../assets/dice/dice_placeholder.gif';
+import rerollBtn from '../../../../assets/theme/btn-reroll.png';
+import frameGreen from '../../../../assets/theme/avatar-frame-green.png';
+import frameRed from '../../../../assets/theme/avatar-frame-red.png';
+import frameYellow from '../../../../assets/theme/avatar-frame-yellow.png';
+import frameBlue from '../../../../assets/theme/avatar-frame-blue.png';
 import { useCallback, useEffect, useMemo } from 'react';
 import { type TPlayerColour } from '../../../../types';
 import { useSelector } from 'react-redux';
@@ -25,6 +30,13 @@ type Props = {
   colour: TPlayerColour;
   playerName: string;
   profileId: string | null;
+};
+
+const FRAME_BY_COLOUR: Record<TPlayerColour, string> = {
+  green: frameGreen,
+  red: frameRed,
+  yellow: frameYellow,
+  blue: frameBlue,
 };
 
 function getDiceImage(diceNumber: number | undefined): string {
@@ -76,6 +88,13 @@ export default function Dice({ colour, playerName, profileId }: Props) {
     isPlaceholderShowing ||
     isBot;
 
+  // The corner slot shows one of three things:
+  //  - avatar frame  (idle / not this player's turn)
+  //  - roll button   (this human's turn, before they've rolled)
+  //  - dice face     (mid-roll or after rolling, incl. the whole bot turn)
+  const showRollButton = isCurrentPlayer && !isBot && !isPlaceholderShowing && !anyTokenActive;
+  const showDiceFace = isCurrentPlayer && !showRollButton;
+
   const handleDiceClick = useCallback(async () => {
     if (isDiceDisabled) return;
     const diceNumber = await rollDice(colour);
@@ -91,44 +110,56 @@ export default function Dice({ colour, playerName, profileId }: Props) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleDiceClick, isDiceDisabled]);
+
   return (
     <div className={clsx(styles.diceContainer, styles[colour])}>
-      <button
-        className={clsx(styles.dice, {
-          [styles.active]: !isDiceDisabled,
-          [styles.rolling]: isPlaceholderShowing,
-        })}
-        tabIndex={isDiceDisabled ? -1 : undefined}
-        title={!isDiceDisabled ? 'Roll Dice (Press D)' : undefined}
-        disabled={isDiceDisabled}
-        style={{ '--player-colour': playerColours[colour] } as React.CSSProperties}
-        type="button"
-        onClick={handleDiceClick}
-      >
-        <img
-          src={isPlaceholderShowing ? dicePlaceholder : getDiceImage(diceNumber)}
-          alt="Dice image"
-          aria-hidden="true"
-        />
-      </button>
-      <span className={styles.playerLabel}>
-        <ProfilePhoto profileId={profileId} name={playerName} size={22} />
-        <span className={styles.info}>
-          <span className={styles.playerName}>{playerName}</span>
-          <span className={styles.stats}>
-            <span className={styles.stat} title="Captures made" aria-label={`${kills} captures made`}>
-              <H c="⚔️" /> {kills}
-            </span>
-            <span
-              className={styles.stat}
-              title="Tokens sent home by others"
-              aria-label={`${deaths} tokens sent home`}
-            >
-              <H c="💀" /> {deaths}
-            </span>
-          </span>
+      <span className={styles.stats}>
+        <span className={styles.stat} title="Captures made" aria-label={`${kills} captures made`}>
+          <H c="⚔️" /> {kills}
+        </span>
+        <span
+          className={styles.stat}
+          title="Tokens sent home by others"
+          aria-label={`${deaths} tokens sent home`}
+        >
+          <H c="💀" /> {deaths}
         </span>
       </span>
+
+      <span className={styles.slot}>
+        {showRollButton ? (
+          <button
+            className={clsx(styles.dice, styles.rollBtn, styles.active)}
+            title="Roll Dice (Press D)"
+            style={{ '--player-colour': playerColours[colour] } as React.CSSProperties}
+            type="button"
+            onClick={handleDiceClick}
+          >
+            <img src={rerollBtn} alt={`Roll dice for ${playerName}`} />
+          </button>
+        ) : showDiceFace ? (
+          <span className={clsx(styles.dice, styles.diceFace, { [styles.rolling]: isPlaceholderShowing })}>
+            <img
+              src={isPlaceholderShowing ? dicePlaceholder : getDiceImage(diceNumber)}
+              alt="Dice"
+              aria-hidden="true"
+            />
+          </span>
+        ) : (
+          <span className={styles.avatar}>
+            <span className={styles.avatarPhoto}>
+              <ProfilePhoto profileId={profileId} name={playerName} size={44} />
+            </span>
+            <img className={styles.avatarFrame} src={FRAME_BY_COLOUR[colour]} alt="" aria-hidden="true" />
+          </span>
+        )}
+      </span>
+
+      {isCurrentPlayer && (
+        <span className={styles.pointer} aria-hidden="true">
+          <H c="👉" />
+        </span>
+      )}
     </div>
   );
 }
