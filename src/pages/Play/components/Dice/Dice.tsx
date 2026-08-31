@@ -4,7 +4,6 @@ import dice3 from '../../../../assets/theme/dice-3.png';
 import dice4 from '../../../../assets/theme/dice-4.png';
 import dice5 from '../../../../assets/theme/dice-5.png';
 import dice6 from '../../../../assets/theme/dice-6.png';
-import dicePlaceholder from '../../../../assets/dice/dice_placeholder.gif';
 import rerollBtn from '../../../../assets/theme/btn-reroll.png';
 import frameGreen from '../../../../assets/theme/avatar-frame-green.png';
 import frameRed from '../../../../assets/theme/avatar-frame-red.png';
@@ -15,7 +14,6 @@ import { type TPlayerColour } from '../../../../types';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../../state/store';
 import { ERRORS } from '../../../../utils/errors';
-import { playerColours } from '../../../../game/players/constants';
 import { isAnyTokenActiveOfColour } from '../../../../game/tokens/logic';
 import styles from './Dice.module.css';
 import clsx from 'clsx';
@@ -126,33 +124,35 @@ export default function Dice({ colour, playerName, profileId }: Props) {
         </span>
       </span>
 
-      <span className={styles.slot}>
-        {showRollButton ? (
-          <button
-            className={clsx(styles.dice, styles.rollBtn, styles.active)}
-            title="Roll Dice (Press D)"
-            style={{ '--player-colour': playerColours[colour] } as React.CSSProperties}
-            type="button"
-            onClick={handleDiceClick}
-          >
-            <img src={rerollBtn} alt={`Roll dice for ${playerName}`} />
-          </button>
-        ) : showDiceFace ? (
-          <span className={clsx(styles.dice, styles.diceFace, { [styles.rolling]: isPlaceholderShowing })}>
-            <img
-              src={isPlaceholderShowing ? dicePlaceholder : getDiceImage(diceNumber)}
-              alt="Dice"
-              aria-hidden="true"
-            />
-          </span>
-        ) : (
-          <span className={styles.avatar}>
-            <span className={styles.avatarPhoto}>
+      <span className={clsx(styles.slot, { [styles.slotActive]: isCurrentPlayer })}>
+        {/* The avatar frame is always present; only the centre content swaps
+            between the player photo, the roll button and the rolled dice. */}
+        <span className={styles.avatar}>
+          <span className={styles.avatarInner}>
+            {showRollButton ? (
+              <button
+                className={clsx(styles.dice, styles.rollBtn)}
+                title="Roll Dice (Press D)"
+                type="button"
+                onClick={handleDiceClick}
+              >
+                <img src={rerollBtn} alt={`Roll dice for ${playerName}`} />
+              </button>
+            ) : showDiceFace ? (
+              <span className={styles.dice}>
+                <img src={getDiceImage(diceNumber)} alt="Dice" aria-hidden="true" />
+              </span>
+            ) : (
               <ProfilePhoto profileId={profileId} name={playerName} size={44} />
-            </span>
-            <img className={styles.avatarFrame} src={FRAME_BY_COLOUR[colour]} alt="" aria-hidden="true" />
+            )}
           </span>
-        )}
+          <img
+            className={styles.avatarFrame}
+            src={FRAME_BY_COLOUR[colour]}
+            alt=""
+            aria-hidden="true"
+          />
+        </span>
       </span>
 
       {isCurrentPlayer && (

@@ -53,9 +53,38 @@
   align-items: center;
 }
 
-.dice {
+/* ---- avatar frame (always shown) + centred swappable content ---- */
+.avatar {
+  position: absolute;
+  inset: 0;
+}
+
+.avatar-frame {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  /* Frame sits on top for the border, but must not eat the roll-button tap. */
+  pointer-events: none;
+}
+
+/* The window cut into the frame art. The photo, the roll button and the rolled
+   dice all live here, centred, so nothing jumps and the frame never vanishes. */
+.avatar-inner {
+  position: absolute;
+  inset: 15%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  & > * {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 16% !important;
+  }
+}
+
+.dice {
   padding: 0;
   border: none;
   background: transparent;
@@ -72,58 +101,11 @@
 
 .roll-btn {
   cursor: pointer;
-  border-radius: calc(var(--board-tile-size) * 0.25);
 }
 
-.dice-face {
-  cursor: default;
-}
-
-.dice-face > img {
-  /* Dice face reads a touch smaller than the avatar frame it replaces. */
-  width: 82%;
-  height: 82%;
-}
-
-.active {
-  animation: pulse 1s infinite;
-}
-
-.rolling {
-  animation: dice-roll 0.35s ease-in-out;
-}
-
-/* ---- avatar frame + photo ---- */
-.avatar {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.avatar-photo {
-  position: absolute;
-  inset: 12%;
-  border-radius: 22%;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  & > * {
-    width: 100% !important;
-    height: 100% !important;
-    /* Fill the frame's square window rather than sitting as a small circle
-       inside it (ProfileAvatar defaults to a circle). */
-    border-radius: 18% !important;
-  }
-}
-
-.avatar-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+/* Active player: gentle glow + pulse on the whole slot to invite a tap. */
+.slot-active {
+  animation: pulse 1.1s ease-in-out infinite;
 }
 
 /* ---- stats: captures over deaths, stacked ---- */
@@ -189,42 +171,20 @@
   }
 }
 
-@keyframes dice-roll {
-  0% {
-    transform: rotate(0deg) scale(1);
-  }
-  25% {
-    transform: rotate(-18deg) scale(1.08);
-  }
-  50% {
-    transform: rotate(14deg) scale(1.12);
-  }
-  75% {
-    transform: rotate(-8deg) scale(1.08);
-  }
-  100% {
-    transform: rotate(0deg) scale(1);
-  }
-}
-
 @keyframes pulse {
-  0% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 calc(var(--board-tile-size) / 12) var(--player-colour));
-  }
-  50% {
-    transform: scale(1.08);
-    filter: drop-shadow(0 0 calc(var(--board-tile-size) / 5) var(--player-colour));
-  }
+  0%,
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 calc(var(--board-tile-size) / 12) var(--player-colour));
+    filter: drop-shadow(0 0 calc(var(--board-tile-size) / 12) rgba(255, 240, 200, 0.6));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 calc(var(--board-tile-size) / 5) rgba(255, 240, 200, 0.95));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .active,
-  .rolling,
+  .slot-active,
   .pointer {
     animation: none;
   }
