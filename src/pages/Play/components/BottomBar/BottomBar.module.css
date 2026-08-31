@@ -52,26 +52,6 @@
   }
 }
 
-.mode {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #f4ecd8;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  line-height: 1.05;
-}
-
-.mode-title {
-  font-size: calc(var(--board-tile-size) * 0.7);
-  font-weight: 800;
-}
-
-.mode-sub {
-  font-size: calc(var(--board-tile-size) * 0.5);
-  font-weight: 600;
-  opacity: 0.8;
-}
-
 .right-controls {
   display: flex;
   align-items: center;

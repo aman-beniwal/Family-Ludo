@@ -108,19 +108,19 @@ export default function PlayerSetup() {
 
       deleteSaveFromStorage(); // this is to prevent the old game from getting loaded
 
-      const playerInitData = playersData.slice(0, playerCount);
+      // Any human seat left blank just gets a default name (its colour), so a
+      // player can tap PLAY straight away without choosing or adding anyone.
+      const playerInitData = playersData.slice(0, playerCount).map((d, i) => {
+        if (d.isBot || d.name.trim()) return d;
+        const colour = playerSequence[i];
+        return { ...d, name: colour.charAt(0).toUpperCase() + colour.slice(1) };
+      });
       const areAllPlayersBot = playerInitData.every((d) => d.isBot);
-      const isAnyHumanWithoutProfile = playerInitData.some((d) => !d.isBot && d.profileId === null);
 
       if (areAllPlayersBot) {
         toast('There must be at least one human player', {
           type: 'error',
           toastId: toastIds.allBotPlayer,
-        });
-      } else if (isAnyHumanWithoutProfile) {
-        toast('Choose a player for each human seat', {
-          type: 'error',
-          toastId: toastIds.profileMissing,
         });
       } else {
         return void navigate('/play', { state: { initData: playerInitData } });
