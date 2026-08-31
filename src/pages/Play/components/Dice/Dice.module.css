@@ -1,5 +1,5 @@
 .dice-container {
-  --slot-size: calc(var(--board-tile-size) * 1.55);
+  --slot-size: calc(var(--board-tile-size) * 2.325);
   --gap: calc(var(--board-tile-size) * 0.35);
   position: absolute;
   padding: 0;
@@ -116,7 +116,7 @@
   gap: calc(var(--board-tile-size) * 0.15);
   color: #fff;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-  font-size: calc(var(--board-tile-size) * 0.5);
+  font-size: calc(var(--board-tile-size) * 0.75);
   font-weight: 700;
   line-height: 1;
 }
