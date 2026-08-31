@@ -11,9 +11,10 @@ import { saveState } from '../game/storage/saveState';
 import { sleep } from '../utils/sleep';
 import { ERRORS } from '../utils/errors';
 
-// Kept short so the roll feels snappy — the fair value is picked the moment
-// the brief spin ends (the previous 1000ms felt very slow).
-const DICE_PLACEHOLDER_DELAY = 350;
+// After the value is picked it is shown on the die and held for this long
+// before the caller acts, so a fast auto-move (e.g. a single pawn already out)
+// can't whisk the number away before the player has read it.
+const DICE_REVEAL_DELAY = 800;
 
 export const useRollDice = () => {
   const store = useStore<RootState>();
@@ -23,16 +24,18 @@ export const useRollDice = () => {
       if (store.getState().players.isGameEnded) throw new Error(ERRORS.gameEnded());
       dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: true }));
       playSound('diceRoll');
-      await sleep(DICE_PLACEHOLDER_DELAY);
       // Single choke point: humans and bots both reach the dice through here,
       // and the value comes only from the stateless fair generator (R1–R4).
       const diceNumber = rollFairDie();
-      dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: false }));
+      // Reveal the rolled number straight away (the die face shows it while
+      // isPlaceholderShowing is true), then hold before returning.
       dispatch(setDiceNumber({ colour, value: diceNumber }));
       // Record the finalized roll and persist the running history so per-face
       // counts accumulate across sessions (R5).
       dispatch(addRollHistoryEntry({ colour, value: diceNumber, timestamp: Date.now() }));
       saveRollHistory(store.getState().rollHistory);
+      await sleep(DICE_REVEAL_DELAY);
+      dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: false }));
       saveState(store.getState());
       return diceNumber;
     },
