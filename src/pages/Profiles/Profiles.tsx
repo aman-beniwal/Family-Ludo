@@ -263,7 +263,6 @@ function ProfileForm({
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
           className={styles.hiddenInput}
           onChange={(e) => void handlePhotoChange(e)}
         />

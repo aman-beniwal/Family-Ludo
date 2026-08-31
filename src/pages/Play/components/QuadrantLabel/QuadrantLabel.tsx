@@ -9,9 +9,9 @@ type Props = {
 };
 
 /**
- * The "Human / 0%" caption that sits inside each colour's home quadrant on the
- * board. The type label hugs the board's outer edge and the progress percentage
- * hugs the centre-facing edge, matching the reference art.
+ * The name/progress caption inside each colour's home quadrant. The name (or
+ * "Bot") hugs the board's outer edge; the completion percentage hugs the
+ * centre-facing edge.
  */
 export default function QuadrantLabel({ colour }: Props) {
   const player = useSelector((state: RootState) =>
@@ -19,13 +19,16 @@ export default function QuadrantLabel({ colour }: Props) {
   );
   if (!player) return null;
 
+  // TODO: switch to an overall completion rate (distance travelled by all
+  // tokens / distance to finish). For now: share of tokens that reached home.
   const tokensHome = player.tokens.filter((t) => t.hasTokenReachedHome).length;
   const progress = Math.round((tokensHome / player.tokens.length) * 100);
-  const typeLabel = player.isBot ? 'Bot' : 'Human';
+
+  const label = player.isBot ? 'Bot' : player.name.trim() || 'Player';
 
   return (
     <div className={clsx(styles.quadrant, styles[colour])} aria-hidden="true">
-      <span className={styles.type}>{typeLabel}</span>
+      <span className={styles.type}>{label}</span>
       <span className={styles.progress}>{progress}%</span>
     </div>
   );
