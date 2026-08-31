@@ -8,8 +8,11 @@ export const playerColours = {
 } as const;
 
 export const MAX_PLAYER_NAME_LENGTH = 15;
+// Turn order follows the board clockwise: blue (bottom-right) → yellow
+// (bottom-left) → green (top-left) → red (top-right). Fewer-player games keep
+// that same relative rotation, dropping the unused colours.
 export const playerSequences: Record<TPlayerCount, TPlayerColour[]> = {
   two: ['blue', 'green'],
-  three: ['blue', 'red', 'green'],
-  four: ['blue', 'red', 'green', 'yellow'],
+  three: ['blue', 'green', 'red'],
+  four: ['blue', 'yellow', 'green', 'red'],
 } as const;

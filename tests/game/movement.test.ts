@@ -258,7 +258,7 @@ describe('Test game/movement', () => {
 
         const { nextState } = calculateSequence(state, mover, 4);
 
-        expect(nextState.players.currentPlayerColour).toBe('red');
+        expect(nextState.players.currentPlayerColour).toBe('yellow');
       });
 
       it('grants another turn to the same player when the roll was a six', () => {
@@ -315,8 +315,8 @@ describe('Test game/movement', () => {
         expect(
           getPlayer(nextState.players, 'blue').tokens.every((t) => t.hasTokenReachedHome)
         ).toBe(true);
-        expect(nextState.players.playerSequence).toEqual(['red', 'green', 'yellow']);
-        expect(nextState.players.currentPlayerColour).toBe('red');
+        expect(nextState.players.playerSequence).toEqual(['yellow', 'green', 'red']);
+        expect(nextState.players.currentPlayerColour).toBe('yellow');
       });
 
       it('wraps back around to the first player in the sequence', () => {
