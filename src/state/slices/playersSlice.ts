@@ -71,6 +71,17 @@ const reducers = {
     });
   },
 
+  // Assigns (or changes) the profile behind a seat mid-game — used when a
+  // player taps their on-board name to pick a saved profile.
+  setPlayerProfile: (
+    state: TPlayerState,
+    action: PayloadAction<{ colour: TPlayerColour; name: string; profileId: string | null }>
+  ) => {
+    const player = getPlayer(state, action.payload.colour);
+    player.name = action.payload.name;
+    player.profileId = action.payload.profileId;
+  },
+
   // Records a capture for the panel counters: the capturer's kills go up by the
   // number of tokens captured, and each captured token's owner's deaths go up.
   recordCapture: (
@@ -211,6 +222,7 @@ const playersSlice = createSlice({
 
 export const {
   registerNewPlayer,
+  setPlayerProfile,
   recordCapture,
   updateTokenCoordinatesAndDirection,
   setPlayerSequence,
