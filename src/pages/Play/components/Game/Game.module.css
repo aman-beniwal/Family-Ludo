@@ -12,26 +12,3 @@
     radial-gradient(circle at 86% 62%, rgba(255, 214, 150, 0.09), transparent 20%),
     radial-gradient(130% 105% at 50% 20%, #6d4f16 0%, #4a3410 55%, #34240a 100%);
 }
-
-.exit-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background-color: red;
-  color: white;
-  border: none;
-  aspect-ratio: 1 / 1;
-  height: calc(var(--board-tile-size) * 0.6);
-  width: auto;
-  font-size: calc(var(--board-tile-size) * 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 200ms ease;
-
-  &:hover,
-  &:focus-visible {
-    background-color: #dc0000;
-  }
-}

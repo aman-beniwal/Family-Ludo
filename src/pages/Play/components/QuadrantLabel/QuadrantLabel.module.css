@@ -1,0 +1,50 @@
+.quadrant {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--board-tile-size) * 0.35) 0;
+  z-index: 5;
+  pointer-events: none;
+  color: #fff;
+  text-shadow: 0 calc(var(--board-tile-size) * 0.03) calc(var(--board-tile-size) * 0.12)
+    rgba(0, 0, 0, 0.55);
+}
+
+/* Top quadrants: type hugs the top (outer) edge, % the bottom (inner) edge.
+   Bottom quadrants flip via column-reverse so type hugs the bottom edge. */
+.green {
+  top: 0;
+  left: 0;
+}
+
+.red {
+  top: 0;
+  right: 0;
+}
+
+.yellow {
+  bottom: 0;
+  left: 0;
+  flex-direction: column-reverse;
+}
+
+.blue {
+  bottom: 0;
+  right: 0;
+  flex-direction: column-reverse;
+}
+
+.type {
+  font-size: calc(var(--board-tile-size) * 0.62);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.progress {
+  font-size: calc(var(--board-tile-size) * 0.58);
+  font-weight: 800;
+}
