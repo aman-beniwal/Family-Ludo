@@ -50,7 +50,11 @@ export const useHandlePostDiceRoll = () => {
 
       const movableTokens = player.tokens.filter((t) => isTokenMovable(t, diceNumber));
 
-      if (diceNumber === 6 && lockedTokens.length === 1 && movableTokens.length === 0) {
+      // On a six, if the only legal move is to bring a pawn out of base (no
+      // pawn on the board can advance), unlock one automatically — including
+      // the common case where every pawn is still in base. Base pawns are
+      // interchangeable, so there's no real choice to ask the player to make.
+      if (diceNumber === 6 && lockedTokens.length >= 1 && movableTokens.length === 0) {
         unlockToken({ colour: lockedTokens[0].colour, id: lockedTokens[0].id });
         dispatch(deactivateAllTokens(lockedTokens[0].colour));
         return { moveData: null, shouldChangeTurn: false };

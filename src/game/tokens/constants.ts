@@ -5,7 +5,8 @@ import type { TTokenDirection, TTokenPath } from '../../types/tokens';
 export const transitionStates = {
   forward: {
     timingFn: 'easeInOut',
-    durationMs: 150,
+    // ~30% faster per-tile hop (was 150ms).
+    durationMs: 115,
   },
   backward: {
     // Captured tokens snap home fast.
