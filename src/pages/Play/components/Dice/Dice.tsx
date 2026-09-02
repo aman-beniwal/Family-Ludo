@@ -64,7 +64,7 @@ export default function Dice({ colour, playerName, profileId }: Props) {
     currentPlayerColour: currentPlayer,
     players,
   } = useSelector((state: RootState) => state.players);
-  const { diceNumber, isPlaceholderShowing } =
+  const { diceNumber, isPlaceholderShowing, isSpinning } =
     useSelector((state: RootState) => state.dice.dice.find((d) => d.colour === colour)) ?? {};
 
   const anyTokenActive = useMemo(
@@ -146,7 +146,7 @@ export default function Dice({ colour, playerName, profileId }: Props) {
                 <img src={rerollBtn} alt={`Roll dice for ${playerName}`} />
               </button>
             ) : showDiceFace ? (
-              isPlaceholderShowing ? (
+              isSpinning ? (
                 <DiceSpinner className={styles.spinner} />
               ) : (
                 <span className={styles.dice}>

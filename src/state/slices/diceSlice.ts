@@ -23,6 +23,7 @@ const reducers = {
       colour: action.payload,
       diceNumber: 1,
       isPlaceholderShowing: false,
+      isSpinning: false,
     });
   },
   setIsPlaceholderShowing: (
@@ -31,6 +32,13 @@ const reducers = {
   ) => {
     const dice = getDice(state, action.payload.colour);
     dice.isPlaceholderShowing = action.payload.isPlaceholderShowing;
+  },
+  setIsSpinning: (
+    state: TDiceState,
+    action: PayloadAction<{ colour: TPlayerColour; isSpinning: boolean }>
+  ) => {
+    const dice = getDice(state, action.payload.colour);
+    dice.isSpinning = action.payload.isSpinning;
   },
   // Stores the already-generated die value produced by rollFairDie(). The value
   // is decided by the shared dice function, never by this reducer, so the store
@@ -51,7 +59,12 @@ const diceSlice = createSlice({
   reducers,
 });
 
-export const { registerDice, setDiceNumber, setIsPlaceholderShowing, clearDiceState } =
-  diceSlice.actions;
+export const {
+  registerDice,
+  setDiceNumber,
+  setIsPlaceholderShowing,
+  setIsSpinning,
+  clearDiceState,
+} = diceSlice.actions;
 
 export default diceSlice.reducer;
