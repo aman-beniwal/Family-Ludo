@@ -13,8 +13,9 @@ import { sleep } from '../utils/sleep';
 import { ERRORS } from '../utils/errors';
 
 // How long the rolling-dice Lottie spins before the die lands. Purely visual —
-// the outcome is decided only after it, below.
-const SPIN_DURATION = 700;
+// the outcome is decided only after it, below. Kept short so the roll feels
+// snappy alongside the faster playback speed.
+const SPIN_DURATION = 500;
 // After the value lands it is held for this long before the caller acts, so a
 // fast auto-move (e.g. a single pawn already out) can't whisk the number away
 // before the player has read it.
