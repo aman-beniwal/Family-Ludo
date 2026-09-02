@@ -2,7 +2,7 @@ import { type RootState, type AppDispatch } from './../state/store';
 import { useCallback } from 'react';
 import { useDispatch, useStore } from 'react-redux';
 import type { TPlayerColour } from '../types';
-import { setIsPlaceholderShowing, setDiceNumber } from '../state/slices/diceSlice';
+import { setIsPlaceholderShowing, setIsSpinning, setDiceNumber } from '../state/slices/diceSlice';
 import { recordExitRoll } from '../state/slices/playersSlice';
 import { rollFairDie } from '../game/dice/rollFairDie';
 import { addRollHistoryEntry } from '../state/slices/rollHistorySlice';
@@ -36,9 +36,12 @@ export const useRollDice = () => {
       const allInBase = !!player && player.tokens.every((t) => t.isLocked && !t.hasTokenReachedHome);
       const owedPitySix = allInBase && (player?.turnsStuckInBase ?? 0) >= STUCK_TURNS_BEFORE_PITY_SIX;
 
+      // isPlaceholderShowing stays true for the whole roll (spin + reveal) so
+      // the roll button never reappears; isSpinning gates the tumble itself.
       dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: true }));
+      dispatch(setIsSpinning({ colour, isSpinning: true }));
       playSound('diceRoll');
-      // Let the rolling-dice Lottie spin (shown while isPlaceholderShowing).
+      // Let the rolling-dice Lottie spin.
       await sleep(SPIN_DURATION);
       // Single choke point: humans and bots both reach the dice through here.
       // The value is the stateless fair generator (R1–R4) unless the player is
@@ -46,15 +49,18 @@ export const useRollDice = () => {
       const diceNumber = owedPitySix ? 6 : rollFairDie();
       // Update the stuck-in-base streak from what actually landed.
       dispatch(recordExitRoll({ colour, allInBase, rolledSix: diceNumber === 6 }));
-      // Stop the spinner and land on the real value, then hold it so it's
-      // clearly readable before the caller acts (e.g. a fast auto-move).
+      // Land: stop the tumble and show the number (placeholder still true, so
+      // it's the number on screen — not the roll button).
       dispatch(setDiceNumber({ colour, value: diceNumber }));
-      dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: false }));
+      dispatch(setIsSpinning({ colour, isSpinning: false }));
       // Record the finalized roll and persist the running history so per-face
       // counts accumulate across sessions (R5) — only the landed value counts.
       dispatch(addRollHistoryEntry({ colour, value: diceNumber, timestamp: Date.now() }));
       saveRollHistory(store.getState().rollHistory);
+      // Hold the number so it's clearly readable, then end the roll. The caller
+      // then acts (activating tokens / auto-move) which keeps the number up.
       await sleep(DICE_REVEAL_DELAY);
+      dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: false }));
       saveState(store.getState());
       return diceNumber;
     },

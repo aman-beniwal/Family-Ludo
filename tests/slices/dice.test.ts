@@ -18,6 +18,7 @@ describe('Test dice slice reducers', () => {
         colour: 'blue',
         diceNumber: 1,
         isPlaceholderShowing: false,
+        isSpinning: false,
       });
     });
   });
