@@ -147,7 +147,7 @@ export default function Dice({ colour, playerName, profileId }: Props) {
               </button>
             ) : showDiceFace ? (
               isPlaceholderShowing ? (
-                <DiceSpinner className={styles.dice} />
+                <DiceSpinner className={styles.spinner} />
               ) : (
                 <span className={styles.dice}>
                   <img src={getDiceImage(diceNumber)} alt="Dice" aria-hidden="true" />
