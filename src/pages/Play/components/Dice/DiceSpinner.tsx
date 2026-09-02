@@ -25,6 +25,7 @@ export function DiceSpinner({ className }: Props) {
       autoplay: true,
       animationData,
     });
+    anim.setSpeed(1.15); // 15% snappier spin
     return () => anim.destroy();
   }, []);
 

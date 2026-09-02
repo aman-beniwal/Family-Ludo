@@ -22,9 +22,10 @@ const reducers = {
   resizeBoard: (state: TBoardState, action: PayloadAction<number>) => {
     state.boardSideLength = action.payload;
     state.boardTileSize = action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW;
-    state.tokenHeight = (action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW) * 0.8;
+    // Pawns are 0.88 of a tile (was 0.8 — bumped 10% for a bolder look).
+    state.tokenHeight = (action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW) * 0.88;
     state.tokenWidth =
-      (action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW) * 0.8 * TOKEN_WIDTH_HEIGHT_RATIO;
+      (action.payload / NUMBER_OF_BLOCKS_IN_ONE_ROW) * 0.88 * TOKEN_WIDTH_HEIGHT_RATIO;
   },
   clearBoardState: () => initialState,
 };

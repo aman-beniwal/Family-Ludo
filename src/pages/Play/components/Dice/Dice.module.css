@@ -103,6 +103,13 @@
   cursor: pointer;
 }
 
+/* The Lottie's die sits with padding inside its 300x300 frame, so scale the
+   spinner up to roughly match the size of the landed dice face. */
+.spinner {
+  transform: scale(1.55);
+  transform-origin: center;
+}
+
 /* Active player: gentle glow + pulse on the whole slot to invite a tap. */
 .slot-active {
   animation: pulse 1.1s ease-in-out infinite;

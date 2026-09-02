@@ -12,7 +12,7 @@ describe('Test board slice reducers', () => {
     it('should update board and token dimensions when board side length is set', () => {
       const newBoardSideLength = 550;
       const newBoardBlockSize = newBoardSideLength / NUMBER_OF_BLOCKS_IN_ONE_ROW;
-      const newTokenHeight = newBoardBlockSize * 0.8;
+      const newTokenHeight = newBoardBlockSize * 0.88;
       const newTokenWidth = newTokenHeight * TOKEN_WIDTH_HEIGHT_RATIO;
       const newState = boardReducer(initialState, resizeBoard(newBoardSideLength));
 
