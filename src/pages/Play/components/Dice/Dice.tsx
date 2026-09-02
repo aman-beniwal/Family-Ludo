@@ -22,6 +22,7 @@ import { useHandlePostDiceRoll } from '../../../../hooks/useHandlePostDiceRoll';
 import { useChangeTurn } from '../../../../hooks/useChangeTurn';
 import { logError } from '../../../../utils/logError';
 import { ProfilePhoto } from '../../../../components/ProfilePhoto/ProfilePhoto';
+import { DiceSpinner } from './DiceSpinner';
 import { H } from '../../../../components/H/H';
 
 type Props = {
@@ -145,9 +146,13 @@ export default function Dice({ colour, playerName, profileId }: Props) {
                 <img src={rerollBtn} alt={`Roll dice for ${playerName}`} />
               </button>
             ) : showDiceFace ? (
-              <span className={styles.dice}>
-                <img src={getDiceImage(diceNumber)} alt="Dice" aria-hidden="true" />
-              </span>
+              isPlaceholderShowing ? (
+                <DiceSpinner className={styles.dice} />
+              ) : (
+                <span className={styles.dice}>
+                  <img src={getDiceImage(diceNumber)} alt="Dice" aria-hidden="true" />
+                </span>
+              )
             ) : (
               <ProfilePhoto profileId={profileId} name={playerName} size={44} />
             )}

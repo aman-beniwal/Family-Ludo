@@ -12,11 +12,9 @@ import { saveState } from '../game/storage/saveState';
 import { sleep } from '../utils/sleep';
 import { ERRORS } from '../utils/errors';
 
-// Cosmetic tumble: flash this many random faces before the die lands, so the
-// roll reads as a spin. These values are decorative only — never recorded and
-// never the outcome (the real value comes from rollFairDie below).
-const SPIN_TICKS = 7;
-const SPIN_INTERVAL = 70;
+// How long the rolling-dice Lottie spins before the die lands. Purely visual —
+// the outcome is decided only after it, below.
+const SPIN_DURATION = 700;
 // After the value lands it is held for this long before the caller acts, so a
 // fast auto-move (e.g. a single pawn already out) can't whisk the number away
 // before the player has read it.
@@ -25,13 +23,6 @@ const DICE_REVEAL_DELAY = 650;
 // still stuck in base and never a 6, the next roll is forced to a 6 so they
 // finally get a pawn out.
 const STUCK_TURNS_BEFORE_PITY_SIX = 5;
-
-// A random 1–6 face that differs from the previous one, so the tumble never
-// appears to stall on a repeated value.
-function nextSpinFace(previous: number): number {
-  const face = Math.floor(Math.random() * 5) + 1;
-  return face >= previous ? face + 1 : face;
-}
 
 export const useRollDice = () => {
   const store = useStore<RootState>();
@@ -47,27 +38,23 @@ export const useRollDice = () => {
 
       dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: true }));
       playSound('diceRoll');
-      // Tumble through a few random faces (fast), purely visual.
-      let face = 0;
-      for (let i = 0; i < SPIN_TICKS; i++) {
-        face = nextSpinFace(face);
-        dispatch(setDiceNumber({ colour, value: face }));
-        await sleep(SPIN_INTERVAL);
-      }
+      // Let the rolling-dice Lottie spin (shown while isPlaceholderShowing).
+      await sleep(SPIN_DURATION);
       // Single choke point: humans and bots both reach the dice through here.
       // The value is the stateless fair generator (R1–R4) unless the player is
       // owed a pity 6 for being stuck in base too long.
       const diceNumber = owedPitySix ? 6 : rollFairDie();
       // Update the stuck-in-base streak from what actually landed.
       dispatch(recordExitRoll({ colour, allInBase, rolledSix: diceNumber === 6 }));
-      // Land on the real value and hold it so it's clearly readable.
+      // Stop the spinner and land on the real value, then hold it so it's
+      // clearly readable before the caller acts (e.g. a fast auto-move).
       dispatch(setDiceNumber({ colour, value: diceNumber }));
+      dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: false }));
       // Record the finalized roll and persist the running history so per-face
       // counts accumulate across sessions (R5) — only the landed value counts.
       dispatch(addRollHistoryEntry({ colour, value: diceNumber, timestamp: Date.now() }));
       saveRollHistory(store.getState().rollHistory);
       await sleep(DICE_REVEAL_DELAY);
-      dispatch(setIsPlaceholderShowing({ colour, isPlaceholderShowing: false }));
       saveState(store.getState());
       return diceNumber;
     },
