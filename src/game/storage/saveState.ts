@@ -38,6 +38,7 @@ export const saveState = (currentState: RootState): void => {
       profileId: p.profileId,
       kills: p.kills,
       deaths: p.deaths,
+      pawnStyle: p.pawnStyle ?? 'jelly',
     };
 
     toBeStored.players.push(playerToBeStored);

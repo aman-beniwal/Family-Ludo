@@ -8,10 +8,7 @@ import { type TPlayer, type TPlayerColour, type TTokenClickData } from '../../..
 import { type TToken } from '../../../../types';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../../state/store';
-import pawnBlue from '../../../../assets/theme/pawn-blue.png';
-import pawnRed from '../../../../assets/theme/pawn-red.png';
-import pawnGreen from '../../../../assets/theme/pawn-green.png';
-import pawnYellow from '../../../../assets/theme/pawn-yellow.png';
+import { getPawnImage } from '../../../../game/pawns/pawnStyles';
 import { useCoordsToPosition } from '../../../../hooks/useCoordsToPosition';
 import { useMoveAndCaptureToken } from '../../../../hooks/useMoveAndCaptureToken';
 import { transitionStates } from '../../../../game/tokens/constants';
@@ -27,13 +24,6 @@ import { logError } from '../../../../utils/logError';
 
 // Matches the capture-flash keyframe duration in Token.module.css.
 const CAPTURE_FLASH_MS = 450;
-
-const PAWN_BY_COLOUR: Record<TPlayerColour, string> = {
-  blue: pawnBlue,
-  red: pawnRed,
-  green: pawnGreen,
-  yellow: pawnYellow,
-};
 
 type Props = {
   colour: TPlayerColour;
@@ -52,7 +42,7 @@ export default function Token({ colour, id, tokenClickData }: Props) {
   const unlockAndAlignTokens = useUnlockAndAlignTokens();
   const store = useStore<RootState>();
   const isExternallyAnimating = useRef(false);
-  const { numberOfConsecutiveSix, tokens: playerTokens } = useMemo(
+  const { numberOfConsecutiveSix, tokens: playerTokens, pawnStyle } = useMemo(
     () => players.find((v) => v.colour === colour),
     [players, colour]
   ) as TPlayer;
@@ -208,7 +198,7 @@ export default function Token({ colour, id, tokenClickData }: Props) {
       <span className={clsx(styles.bouncer, { [styles.active]: isActive && !isCurrentlyFocused })}>
         <img
           className={styles.svg}
-          src={PAWN_BY_COLOUR[colour]}
+          src={getPawnImage(pawnStyle, colour)}
           alt=""
           aria-hidden="true"
           draggable={false}

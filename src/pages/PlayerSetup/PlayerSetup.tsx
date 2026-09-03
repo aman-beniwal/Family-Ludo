@@ -9,6 +9,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useCleanup } from '../../hooks/useCleanup';
 import { playerCountToWord } from '../../game/players/logic';
 import { playerSequences } from '../../game/players/constants';
+import { PAWN_STYLES } from '../../game/pawns/pawnStyles';
 import HomeIcon from '../../assets/icons/home.svg?react';
 import styles from './PlayerSetup.module.css';
 import { Tooltip } from 'react-tooltip';
@@ -30,10 +31,10 @@ const toastIds = {
 } as const satisfies Record<string, string>;
 
 const DEFAULT_PLAYER_DATA: TPlayerInitData[] = [
-  { name: '', isBot: false, profileId: null },
-  { name: '', isBot: false, profileId: null },
-  { name: '', isBot: false, profileId: null },
-  { name: '', isBot: false, profileId: null },
+  { name: '', isBot: false, profileId: null, pawnStyle: 'jelly' },
+  { name: '', isBot: false, profileId: null, pawnStyle: 'jelly' },
+  { name: '', isBot: false, profileId: null, pawnStyle: 'jelly' },
+  { name: '', isBot: false, profileId: null, pawnStyle: 'jelly' },
 ];
 
 export default function PlayerSetup() {
@@ -81,6 +82,16 @@ export default function PlayerSetup() {
       prev.map((d, i) => (i === seatIndex ? { ...d, name: profile.name, profileId: profile.id } : d))
     );
     setPickerSeat(null);
+  };
+
+  const handleCyclePawnStyle = (seatIndex: number) => {
+    setPlayersData((prev) =>
+      prev.map((d, i) => {
+        if (i !== seatIndex) return d;
+        const next = PAWN_STYLES[(PAWN_STYLES.indexOf(d.pawnStyle) + 1) % PAWN_STYLES.length];
+        return { ...d, pawnStyle: next };
+      })
+    );
   };
 
   const handleBotStatusChange = (seatIndex: number, isBot: boolean) => {
@@ -179,8 +190,10 @@ export default function PlayerSetup() {
               isBot={playersData[index].isBot}
               hasProfile={playersData[index].profileId !== null}
               photoBlob={profileById(playersData[index].profileId)?.photoBlob ?? null}
+              pawnStyle={playersData[index].pawnStyle}
               onBotStatusChange={(isBot) => handleBotStatusChange(index, isBot)}
               onChooseProfile={() => setPickerSeat(index)}
+              onCyclePawnStyle={() => handleCyclePawnStyle(index)}
               key={index}
             />
           ))}

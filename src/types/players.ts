@@ -27,6 +27,9 @@ export type TPlayer = {
   // roll is forced to a 6 so they finally get a pawn out. Optional so saves
   // written before it existed still resume, defaulting to 0.
   turnsStuckInBase?: number;
+  // The pawn artwork this player uses. Optional so pre-existing saves resume,
+  // defaulting to 'jelly'.
+  pawnStyle?: TPawnStyle;
 };
 
 export type TCoordinate = {
@@ -35,10 +38,14 @@ export type TCoordinate = {
   y: number;
 };
 
+// The pawn artwork a player uses. 'jelly' is the original set.
+export type TPawnStyle = 'jelly' | 'agent' | 'cone';
+
 export type TPlayerInitData = {
   isBot: boolean;
   name: string;
   profileId: string | null;
+  pawnStyle: TPawnStyle;
 };
 
 export type TPlayerCount = 'two' | 'three' | 'four';
