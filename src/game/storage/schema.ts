@@ -33,6 +33,9 @@ const playerSchema = z.object({
   // rejects any version mismatch, which would drop in-progress games).
   kills: z.number().default(0),
   deaths: z.number().default(0),
+  // Optional-with-default so saves written before pawn styles existed still
+  // validate and load (backfilling 'jelly'), no SAVE_VERSION bump needed.
+  pawnStyle: z.enum(['jelly', 'agent', 'cone']).default('jelly'),
 });
 
 export const schema = z.object({

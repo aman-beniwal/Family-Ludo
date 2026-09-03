@@ -10,6 +10,7 @@ import type {
   TCoordinate,
   TPlayerCount,
   TTokenDirection,
+  TPawnStyle,
 } from '../../types';
 import type { TToken, TTokenColourAndId, TTokenAlignmentData } from '../../types';
 import { playerSequences } from '../../game/players/constants';
@@ -54,6 +55,7 @@ const reducers = {
       colour: TPlayerColour;
       isBot: boolean;
       profileId?: string | null;
+      pawnStyle?: TPawnStyle;
     }>
   ) => {
     const player = state.players.find((p) => p.colour === action.payload.colour);
@@ -69,6 +71,7 @@ const reducers = {
       kills: 0,
       deaths: 0,
       turnsStuckInBase: 0,
+      pawnStyle: action.payload.pawnStyle ?? 'jelly',
     });
   },
 

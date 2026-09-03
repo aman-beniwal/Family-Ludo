@@ -1,7 +1,8 @@
-import type { TPlayerColour } from '../../../../types';
+import type { TPawnStyle, TPlayerColour } from '../../../../types';
 import BotIcon from '../../../../assets/icons/bot.svg?react';
 import HumanIcon from '../../../../assets/icons/human.svg?react';
 import { playerColours } from '../../../../game/players/constants';
+import { getPawnImage, PAWN_STYLE_LABELS } from '../../../../game/pawns/pawnStyles';
 import { ProfileAvatar } from '../../../../components/ProfileAvatar/ProfileAvatar';
 import 'react-tooltip/dist/react-tooltip.css';
 import styles from './PlayerInput.module.css';
@@ -12,8 +13,10 @@ type Props = {
   name: string;
   photoBlob: Blob | null;
   hasProfile: boolean;
+  pawnStyle: TPawnStyle;
   onBotStatusChange: (isBot: boolean) => void;
   onChooseProfile: () => void;
+  onCyclePawnStyle: () => void;
 };
 
 function PlayerInput({
@@ -22,8 +25,10 @@ function PlayerInput({
   name,
   photoBlob,
   hasProfile,
+  pawnStyle,
   onBotStatusChange,
   onChooseProfile,
+  onCyclePawnStyle,
 }: Props) {
   return (
     <div className={styles.playerInput}>
@@ -47,6 +52,17 @@ function PlayerInput({
           </span>
         </button>
       )}
+
+      <button
+        type="button"
+        className={styles.pawnStyleBtn}
+        data-tooltip-id="bot-status-tooltip"
+        data-tooltip-content={`${PAWN_STYLE_LABELS[pawnStyle]} pawn — tap to change`}
+        aria-label={`Pawn style: ${PAWN_STYLE_LABELS[pawnStyle]}. Tap to change.`}
+        onClick={onCyclePawnStyle}
+      >
+        <img src={getPawnImage(pawnStyle, colour)} alt="" aria-hidden="true" />
+      </button>
 
       <button
         className={styles.botStatusBtn}
