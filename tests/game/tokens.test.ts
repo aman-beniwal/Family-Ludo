@@ -1,5 +1,5 @@
 import { describe, it, expect, assert, vi } from 'vitest';
-import { expandTokenPath, getIntegersBetween } from '../../src/game/tokens/paths';
+import { expandTokenPath, getIntegersBetween, tokenPaths } from '../../src/game/tokens/paths';
 import type { TCoordinate, TPlayer, TToken, TTokenPath } from '../../src/types';
 import { playerSequences } from '../../src/game/players/constants';
 import { genLockedTokens } from '../../src/game/tokens/factory';
@@ -13,6 +13,7 @@ import { TOKEN_LOCKED_COORDINATES } from '../../src/game/tokens/constants';
 import { DUMMY_PLAYERS } from '../fixtures/players.dummy';
 import {
   getAvailableSteps,
+  getPlayerProgressPercent,
   isAnyTokenActiveOfColour,
   isTokenMovable,
   tokensWithCoord,
@@ -224,5 +225,34 @@ describe('Test tokens/logic', () => {
         expect(isTokenMovable(token, 5)).toBe(expected);
       }
     );
+  });
+});
+
+describe('Test tokens/logic getPlayerProgressPercent', () => {
+  const base = { ...DUMMY_TOKEN, colour: 'blue' as const, coordinates: { x: 10.5, y: 10.2 } };
+  const home = { ...DUMMY_TOKEN, colour: 'blue' as const, hasTokenReachedHome: true };
+  const onPath = (idx: number): TToken => ({
+    ...DUMMY_TOKEN,
+    colour: 'blue',
+    coordinates: tokenPaths.blue[idx],
+    isLocked: false,
+    hasTokenReachedHome: false,
+  });
+
+  it('is 0% when every pawn is still in base', () => {
+    expect(getPlayerProgressPercent('blue', [base, base, base, base])).toBe(0);
+  });
+
+  it('is 25% with one pawn home and three in base', () => {
+    expect(getPlayerProgressPercent('blue', [home, base, base, base])).toBe(25);
+  });
+
+  it('is 44% for 100 combined steps (100/228)', () => {
+    // home = 57 steps, path index 42 = 43 steps -> 57 + 43 + 0 + 0 = 100.
+    expect(getPlayerProgressPercent('blue', [home, onPath(42), base, base])).toBe(44);
+  });
+
+  it('is 100% when all four pawns are home', () => {
+    expect(getPlayerProgressPercent('blue', [home, home, home, home])).toBe(100);
   });
 });

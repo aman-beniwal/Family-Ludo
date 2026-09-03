@@ -5,6 +5,7 @@ import { useDispatch, useSelector, useStore } from 'react-redux';
 import type { AppDispatch, RootState } from '../../../../state/store';
 import { setPlayerProfile } from '../../../../state/slices/playersSlice';
 import { listProfiles } from '../../../../game/profiles/store';
+import { getPlayerProgressPercent } from '../../../../game/tokens/logic';
 import { saveState } from '../../../../game/storage/saveState';
 import { logError } from '../../../../utils/logError';
 import ProfilePicker from '../../../PlayerSetup/components/ProfilePicker/ProfilePicker';
@@ -41,10 +42,9 @@ export default function QuadrantLabel({ colour }: Props) {
       .filter((id): id is string => id !== null)
   );
 
-  // TODO: switch to an overall completion rate (distance travelled by all
-  // tokens / distance to finish). For now: share of tokens that reached home.
-  const tokensHome = player.tokens.filter((t) => t.hasTokenReachedHome).length;
-  const progress = Math.round((tokensHome / player.tokens.length) * 100);
+  // Overall completion rate: total steps taken by all four pawns out of the
+  // steps needed to finish (57 per pawn × 4 = 228).
+  const progress = getPlayerProgressPercent(colour, player.tokens);
 
   const label = player.isBot ? 'Bot' : player.name.trim() || 'Player';
 
